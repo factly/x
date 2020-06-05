@@ -1,4 +1,4 @@
-package pagination
+package paginationx
 
 import (
 	"net/url"

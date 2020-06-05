@@ -1,4 +1,4 @@
-package render
+package renderx
 
 import (
 	"encoding/json"
