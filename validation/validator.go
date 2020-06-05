@@ -14,8 +14,8 @@ var Validator validator.Validate
 // Trans - Translator
 var Trans ut.Translator
 
-// Initialize - initialize validator & add translations
-func Initialize(a interface{}) interface{} {
+// Check - Check struct fields
+func Check(model interface{}) interface{} {
 	v := validator.New()
 
 	Validator, Trans = addTranslator(v)
@@ -32,7 +32,7 @@ func Initialize(a interface{}) interface{} {
 		return name
 	})
 
-	err := Validator.Struct(a)
+	err := Validator.Struct(model)
 
 	var arr []interface{}
 	for _, e := range err.(validator.ValidationErrors) {
