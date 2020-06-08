@@ -3,12 +3,23 @@ package loggerx
 import (
 	"fmt"
 	"net/http"
+	"os"
 
 	"time"
 
 	"github.com/go-chi/chi/middleware"
 	"github.com/sirupsen/logrus"
 )
+
+func NewLogger(file *os.File) func(next http.Handler) http.Handler {
+	logger := logrus.New()
+	logger.Formatter = &logrus.TextFormatter{}
+
+	logger.Out = file
+
+	return NewStructuredLogger(logger)
+
+}
 
 func NewStructuredLogger(logger *logrus.Logger) func(next http.Handler) http.Handler {
 	return middleware.RequestLogger(&StructuredLogger{logger})
