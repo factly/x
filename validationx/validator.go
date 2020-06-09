@@ -34,6 +34,10 @@ func Check(model interface{}) interface{} {
 
 	err := Validator.Struct(model)
 
+	if err == nil {
+		return nil
+	}
+
 	var arr []interface{}
 	for _, e := range err.(validator.ValidationErrors) {
 		arr = append(arr, map[string]string{
@@ -44,4 +48,5 @@ func Check(model interface{}) interface{} {
 	}
 
 	return arr
+
 }
