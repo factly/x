@@ -34,19 +34,19 @@ func Check(model interface{}) interface{} {
 
 	err := Validator.Struct(model)
 
-	if err != nil {
-
-		var arr []interface{}
-		for _, e := range err.(validator.ValidationErrors) {
-			arr = append(arr, map[string]string{
-				"field":   e.Field(),
-				"message": e.Translate(Trans),
-			})
-
-		}
-
-		return arr
+	if err == nil {
+		return nil
 	}
 
-	return nil
+	var arr []interface{}
+	for _, e := range err.(validator.ValidationErrors) {
+		arr = append(arr, map[string]string{
+			"field":   e.Field(),
+			"message": e.Translate(Trans),
+		})
+
+	}
+
+	return arr
+
 }
