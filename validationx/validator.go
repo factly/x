@@ -1,9 +1,11 @@
 package validationx
 
 import (
+	"net/http"
 	"reflect"
 	"strings"
 
+	"github.com/factly/x/errorx"
 	ut "github.com/go-playground/universal-translator"
 	"github.com/go-playground/validator/v10"
 )
@@ -15,7 +17,7 @@ var Validator validator.Validate
 var Trans ut.Translator
 
 // Check - Check struct fields
-func Check(model interface{}) interface{} {
+func Check(model interface{}) []errorx.Message {
 	v := validator.New()
 
 	Validator, Trans = addTranslator(v)
@@ -38,15 +40,16 @@ func Check(model interface{}) interface{} {
 		return nil
 	}
 
-	var arr []interface{}
+	errorsList := make([]errorx.Message, 0)
 	for _, e := range err.(validator.ValidationErrors) {
-		arr = append(arr, map[string]string{
-			"field":   e.Field(),
-			"message": e.Translate(Trans),
+		errorsList = append(errorsList, errorx.Message{
+			Code:    http.StatusUnprocessableEntity,
+			Source:  e.Field(),
+			Message: e.Translate(Trans),
 		})
 
 	}
 
-	return arr
+	return errorsList
 
 }
