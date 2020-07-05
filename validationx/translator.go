@@ -30,5 +30,12 @@ func addTranslator(v *validator.Validate) (validator.Validate, ut.Translator) {
 		return t
 	})
 
+	_ = v.RegisterTranslation("email", trans, func(ut ut.Translator) error {
+		return ut.Add("email", "{0} must be a valid email", true)
+	}, func(ut ut.Translator, fe validator.FieldError) string {
+		t, _ := ut.T("email", fe.Field())
+		return t
+	})
+
 	return *v, trans
 }
