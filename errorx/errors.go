@@ -61,11 +61,11 @@ func NetworkError() Message {
 	}
 }
 
-//CannotDeleteError - errors when an item cannot be deleted
-func CannotDeleteError() Message {
+//CannotSaveChanges - errors when an item cannot be changed
+func CannotSaveChanges() Message {
 	return Message{
 		Code:    http.StatusInternalServerError,
-		Message: "Can not delete item",
+		Message: "Can not save changes",
 	}
 }
 
