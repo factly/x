@@ -65,7 +65,7 @@ func NetworkError() Message {
 func CannotDeleteError() Message {
 	return Message{
 		Code:    http.StatusInternalServerError,
-		Message: "Cannot delete item",
+		Message: "Can not delete item",
 	}
 }
 
