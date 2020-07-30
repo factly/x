@@ -61,6 +61,14 @@ func NetworkError() Message {
 	}
 }
 
+//CannotSaveChanges - errors when an item cannot be changed
+func CannotSaveChanges() Message {
+	return Message{
+		Code:    http.StatusInternalServerError,
+		Message: "Can not save changes",
+	}
+}
+
 type response struct {
 	Errors []Message `json:"errors"`
 }

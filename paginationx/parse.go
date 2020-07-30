@@ -12,9 +12,9 @@ func Parse(query url.Values) (int, int) {
 	perPage, _ := strconv.Atoi(query.Get("limit")) // perPage number
 
 	offset := 0 // no. of records to skip
-	limit := 5  // limit
+	limit := 10 // limit
 
-	if perPage > 0 && perPage <= 10 {
+	if perPage > 0 && perPage <= 20 {
 		limit = perPage
 	}
 
