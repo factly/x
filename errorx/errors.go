@@ -61,6 +61,14 @@ func NetworkError() Message {
 	}
 }
 
+//CannotDeleteError - errors when an item cannot be deleted
+func CannotDeleteError() Message {
+	return Message{
+		Code:    http.StatusInternalServerError,
+		Message: "Cannot delete item",
+	}
+}
+
 type response struct {
 	Errors []Message `json:"errors"`
 }
