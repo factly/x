@@ -64,7 +64,7 @@ func NetworkError() Message {
 //CannotSaveChanges - errors when an item cannot be changed
 func CannotSaveChanges() Message {
 	return Message{
-		Code:    http.StatusInternalServerError,
+		Code:    http.StatusUnprocessableEntity,
 		Message: "Can not save changes",
 	}
 }
