@@ -2,8 +2,11 @@ package loggerx
 
 import (
 	"fmt"
+	"log"
 	"net/http"
 	"os"
+	"path"
+	"runtime"
 
 	"time"
 
@@ -11,14 +14,22 @@ import (
 	"github.com/sirupsen/logrus"
 )
 
-func NewLogger(file *os.File) func(next http.Handler) http.Handler {
-	logger := logrus.New()
+var logger *logrus.Logger
+var req *http.Request
+
+func Init() func(next http.Handler) http.Handler {
+	logger = logrus.New()
 	logger.Formatter = &logrus.TextFormatter{}
+
+	file, err := os.OpenFile("logrus.log", os.O_CREATE|os.O_WRONLY|os.O_APPEND, 0666)
+
+	if err != nil {
+		log.Println(err)
+	}
 
 	logger.Out = file
 
 	return NewStructuredLogger(logger)
-
 }
 
 func NewStructuredLogger(logger *logrus.Logger) func(next http.Handler) http.Handler {
@@ -30,6 +41,9 @@ type StructuredLogger struct {
 }
 
 func (l *StructuredLogger) NewLogEntry(r *http.Request) middleware.LogEntry {
+
+	req = r
+
 	entry := &StructuredLoggerEntry{Logger: logrus.NewEntry(l.Logger)}
 	logFields := logrus.Fields{}
 
@@ -70,6 +84,40 @@ func (l *StructuredLoggerEntry) Write(status, bytes int, header http.Header, ela
 	})
 
 	l.Logger.Infoln("request complete")
+}
+
+func Error(err error) {
+	logFields := logrus.Fields{}
+
+	logFields["ts"] = time.Now().UTC().Format(time.RFC1123)
+
+	if reqID := middleware.GetReqID(req.Context()); reqID != "" {
+		logFields["req_id"] = reqID
+	}
+
+	scheme := "http"
+	if req.TLS != nil {
+		scheme = "https"
+	}
+	logFields["http_scheme"] = scheme
+	logFields["http_proto"] = req.Proto
+	logFields["http_method"] = req.Method
+
+	logFields["remote_addr"] = req.RemoteAddr
+	logFields["user_agent"] = req.UserAgent()
+
+	logFields["uri"] = fmt.Sprintf("%s://%s%s", scheme, req.Host, req.RequestURI)
+
+	if pc, file, line, ok := runtime.Caller(1); ok {
+		funcName := runtime.FuncForPC(pc).Name()
+
+		pwd, _ := os.Getwd()
+		relPath := file[len(pwd):]
+
+		logFields["source"] = fmt.Sprintf("%s:%s:%v", relPath, path.Base(funcName), line)
+	}
+
+	logger.WithFields(logFields).Error(err)
 }
 
 func (l *StructuredLoggerEntry) Panic(v interface{}, stack []byte) {
