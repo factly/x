@@ -45,26 +45,7 @@ func (l *StructuredLogger) NewLogEntry(r *http.Request) middleware.LogEntry {
 	req = r
 
 	entry := &StructuredLoggerEntry{Logger: logrus.NewEntry(l.Logger)}
-	logFields := logrus.Fields{}
-
-	logFields["ts"] = time.Now().UTC().Format(time.RFC1123)
-
-	if reqID := middleware.GetReqID(r.Context()); reqID != "" {
-		logFields["req_id"] = reqID
-	}
-
-	scheme := "http"
-	if r.TLS != nil {
-		scheme = "https"
-	}
-	logFields["http_scheme"] = scheme
-	logFields["http_proto"] = r.Proto
-	logFields["http_method"] = r.Method
-
-	logFields["remote_addr"] = r.RemoteAddr
-	logFields["user_agent"] = r.UserAgent()
-
-	logFields["uri"] = fmt.Sprintf("%s://%s%s", scheme, r.Host, r.RequestURI)
+	logFields := GetDefaultFields()
 
 	entry.Logger = entry.Logger.WithFields(logFields)
 
@@ -87,26 +68,7 @@ func (l *StructuredLoggerEntry) Write(status, bytes int, header http.Header, ela
 }
 
 func Error(err error) {
-	logFields := logrus.Fields{}
-
-	logFields["ts"] = time.Now().UTC().Format(time.RFC1123)
-
-	if reqID := middleware.GetReqID(req.Context()); reqID != "" {
-		logFields["req_id"] = reqID
-	}
-
-	scheme := "http"
-	if req.TLS != nil {
-		scheme = "https"
-	}
-	logFields["http_scheme"] = scheme
-	logFields["http_proto"] = req.Proto
-	logFields["http_method"] = req.Method
-
-	logFields["remote_addr"] = req.RemoteAddr
-	logFields["user_agent"] = req.UserAgent()
-
-	logFields["uri"] = fmt.Sprintf("%s://%s%s", scheme, req.Host, req.RequestURI)
+	logFields := GetDefaultFields()
 
 	if pc, file, line, ok := runtime.Caller(1); ok {
 		funcName := runtime.FuncForPC(pc).Name()
@@ -142,4 +104,27 @@ func LogEntrySetFields(r *http.Request, fields map[string]interface{}) {
 	if entry, ok := r.Context().Value(middleware.LogEntryCtxKey).(*StructuredLoggerEntry); ok {
 		entry.Logger = entry.Logger.WithFields(fields)
 	}
+}
+
+func GetDefaultFields() logrus.Fields {
+	logFields := logrus.Fields{}
+
+	if reqID := middleware.GetReqID(req.Context()); reqID != "" {
+		logFields["req_id"] = reqID
+	}
+
+	scheme := "http"
+	if req.TLS != nil {
+		scheme = "https"
+	}
+	logFields["http_scheme"] = scheme
+	logFields["http_proto"] = req.Proto
+	logFields["http_method"] = req.Method
+
+	logFields["remote_addr"] = req.RemoteAddr
+	logFields["user_agent"] = req.UserAgent()
+
+	logFields["uri"] = fmt.Sprintf("%s://%s%s", scheme, req.Host, req.RequestURI)
+
+	return logFields
 }
