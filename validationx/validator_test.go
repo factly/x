@@ -88,13 +88,4 @@ func TestValidationx(t *testing.T) {
 			}
 		}
 	})
-
-	// t.Run("Validate a object", func(t *testing.T) {
-	// 	obj := TestObj{
-	// 		Field1: "test field",
-	// 		Email:  "test@mail.com",
-	// 	}
-
-	// 	Validator.
-	// })
 }
