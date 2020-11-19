@@ -69,6 +69,14 @@ func CannotSaveChanges() Message {
 	}
 }
 
+// GetMessage - get errorx.Message object
+func GetMessage(msg string, code int) Message {
+	return Message{
+		Code:    code,
+		Message: msg,
+	}
+}
+
 type response struct {
 	Errors []Message `json:"errors"`
 }
