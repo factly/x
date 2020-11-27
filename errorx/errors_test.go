@@ -36,7 +36,7 @@ func TestErrorx(t *testing.T) {
 	t.Run("get InvalidID error message", func(t *testing.T) {
 		err := InvalidID()
 
-		if err.Code != http.StatusNotFound {
+		if err.Code != http.StatusBadRequest {
 			t.Errorf("Returned wrong code expected %v, got %v", http.StatusNotFound, err.Code)
 		}
 
@@ -114,6 +114,42 @@ func TestErrorx(t *testing.T) {
 
 		if err.Message != "Can not save changes" {
 			t.Errorf("Returned wrong message expected %v, got %v", "Can not save changes", err.Message)
+		}
+	})
+
+	t.Run("get Unauthorized error message", func(t *testing.T) {
+		err := Unauthorized()
+
+		if err.Code != http.StatusUnauthorized {
+			t.Errorf("Returned wrong code expected %v, got %v", http.StatusUnauthorized, err.Code)
+		}
+
+		if err.Message != "Not allowed" {
+			t.Errorf("Returned wrong message expected %v, got %v", "Not allowed", err.Message)
+		}
+	})
+
+	t.Run("get SameNameExist error message", func(t *testing.T) {
+		err := SameNameExist()
+
+		if err.Code != http.StatusUnprocessableEntity {
+			t.Errorf("Returned wrong code expected %v, got %v", http.StatusUnprocessableEntity, err.Code)
+		}
+
+		if err.Message != "Entity with same name exists" {
+			t.Errorf("Returned wrong message expected %v, got %v", "Entity with same name exists", err.Message)
+		}
+	})
+
+	t.Run("get CannotDelete error message", func(t *testing.T) {
+		err := CannotDelete("tag", "post")
+
+		if err.Code != http.StatusUnprocessableEntity {
+			t.Errorf("Returned wrong code expected %v, got %v", http.StatusUnprocessableEntity, err.Code)
+		}
+
+		if err.Message != "tag is associated with some post" {
+			t.Errorf("Returned wrong message expected %v, got %v", "tag is associated with some post", err.Message)
 		}
 	})
 }

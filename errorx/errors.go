@@ -1,6 +1,7 @@
 package errorx
 
 import (
+	"fmt"
 	"net/http"
 
 	"github.com/factly/x/renderx"
@@ -16,7 +17,7 @@ type Message struct {
 // InvalidID error
 func InvalidID() Message {
 	return Message{
-		Code:    http.StatusNotFound,
+		Code:    http.StatusBadRequest,
 		Message: "Invalid ID",
 	}
 }
@@ -66,6 +67,30 @@ func CannotSaveChanges() Message {
 	return Message{
 		Code:    http.StatusUnprocessableEntity,
 		Message: "Can not save changes",
+	}
+}
+
+//Unauthorized - errors for unauthorized response
+func Unauthorized() Message {
+	return Message{
+		Code:    http.StatusUnauthorized,
+		Message: "Not allowed",
+	}
+}
+
+//SameNameExist - errors for same name exists
+func SameNameExist() Message {
+	return Message{
+		Code:    http.StatusUnprocessableEntity,
+		Message: "Entity with same name exists",
+	}
+}
+
+//CannotDelete - errors for cannot delete associations
+func CannotDelete(entity, association string) Message {
+	return Message{
+		Code:    http.StatusUnprocessableEntity,
+		Message: fmt.Sprint(entity, " is associated with some ", association),
 	}
 }
 
