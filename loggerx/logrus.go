@@ -2,7 +2,6 @@ package loggerx
 
 import (
 	"fmt"
-	"log"
 	"net/http"
 	"os"
 	"path"
@@ -14,26 +13,20 @@ import (
 	"github.com/sirupsen/logrus"
 )
 
-var logger *logrus.Logger
+var logrusLogger *logrus.Logger
 var req *http.Request
 
 func Init() func(next http.Handler) http.Handler {
-	logger = logrus.New()
-	logger.Formatter = &logrus.TextFormatter{}
-
-	file, err := os.OpenFile("logrus.log", os.O_CREATE|os.O_WRONLY|os.O_APPEND, 0666)
-
-	if err != nil {
-		log.Println(err)
+	logrusLogger = logrus.New()
+	logrusLogger.Formatter = &logrus.TextFormatter{
+		ForceColors:   true,
+		FullTimestamp: true,
 	}
-
-	logger.Out = file
-
-	return NewStructuredLogger(logger)
+	return NewStructuredLogger(logrusLogger)
 }
 
-func NewStructuredLogger(logger *logrus.Logger) func(next http.Handler) http.Handler {
-	return middleware.RequestLogger(&StructuredLogger{logger})
+func NewStructuredLogger(logrusLogger *logrus.Logger) func(next http.Handler) http.Handler {
+	return middleware.RequestLogger(&StructuredLogger{logrusLogger})
 }
 
 type StructuredLogger struct {
@@ -79,7 +72,7 @@ func Error(err error) {
 		logFields["source"] = fmt.Sprintf("%s:%s:%v", relPath, path.Base(funcName), line)
 	}
 
-	logger.WithFields(logFields).Error(err)
+	logrusLogger.WithFields(logFields).Error(err)
 }
 
 func (l *StructuredLoggerEntry) Panic(v interface{}, stack []byte) {
