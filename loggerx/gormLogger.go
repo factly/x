@@ -12,6 +12,22 @@ import (
 	"gorm.io/gorm/utils"
 )
 
+// Colors
+const (
+	Reset       = "\033[0m"
+	Red         = "\033[31m"
+	Green       = "\033[32m"
+	Yellow      = "\033[33m"
+	Blue        = "\033[34m"
+	Magenta     = "\033[35m"
+	Cyan        = "\033[36m"
+	White       = "\033[37m"
+	BlueBold    = "\033[34;1m"
+	MagentaBold = "\033[35;1m"
+	RedBold     = "\033[31;1m"
+	YellowBold  = "\033[33;1m"
+)
+
 // GormLogger custom logger for gorm queries
 type GormLogger struct {
 	logger.Writer
@@ -115,14 +131,32 @@ func (l *traceRecorder) Trace(ctx context.Context, begin time.Time, fc func() (s
 
 // NewGormLogger get new gorm logger
 func NewGormLogger(config logger.Config) GormLogger {
+	var (
+		infoStr      = "[request_id:%v] %s\n[info] "
+		warnStr      = "[request_id:%v] %s\n[warn] "
+		errStr       = "[request_id:%v] %s\n[error] "
+		traceStr     = "%s\n[%.3fms] [rows:%v] [request_id:%v] %s"
+		traceWarnStr = "%s %s\n[%.3fms] [rows:%v] [request_id:%v] %s"
+		traceErrStr  = "%s %s\n[%.3fms] [rows:%v] [request_id:%v] %s"
+	)
+
+	if config.Colorful {
+		infoStr = Green + "[request_id:%v] %s\n" + Reset + Green + "[info] " + Reset
+		warnStr = BlueBold + "[request_id:%v] %s\n" + Reset + Magenta + "[warn] " + Reset
+		errStr = Magenta + "[request_id:%v] %s\n" + Reset + Red + "[error] " + Reset
+		traceStr = Green + "%s\n" + Reset + Yellow + "[%.3fms] " + BlueBold + "[rows:%v] [request_id:%v]" + Reset + " %s"
+		traceWarnStr = Green + "%s " + Yellow + "%s\n" + Reset + RedBold + "[%.3fms] " + Yellow + "[rows:%v] [request_id:%v]" + Magenta + " %s" + Reset
+		traceErrStr = RedBold + "%s " + MagentaBold + "%s\n" + Reset + Yellow + "[%.3fms] " + BlueBold + "[rows:%v] [request_id:%v]" + Reset + " %s"
+	}
+
 	return GormLogger{
 		Writer:       log.New(os.Stdout, "\r\n", log.LstdFlags),
-		infoStr:      "[request_id:%v] %s\n[info] ",
-		warnStr:      "[request_id:%v] %s\n[warn] ",
-		errStr:       "[request_id:%v] %s\n[error] ",
-		traceStr:     "%s\n[%.3fms] [rows:%v] [request_id:%v] %s",
-		traceWarnStr: "%s %s\n[%.3fms] [rows:%v] [request_id:%v] %s",
-		traceErrStr:  "%s %s\n[%.3fms] [rows:%v] [request_id:%v] %s",
+		infoStr:      infoStr,
+		warnStr:      warnStr,
+		errStr:       errStr,
+		traceStr:     traceStr,
+		traceWarnStr: traceWarnStr,
+		traceErrStr:  traceErrStr,
 		Config:       config,
 	}
 }
