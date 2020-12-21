@@ -11,6 +11,6 @@ require (
 	github.com/opentracing/opentracing-go v1.2.0
 	github.com/sirupsen/logrus v1.6.0
 	golang.org/x/net v0.0.0-20200822124328-c89045814202 // indirect
-	gorm.io/gorm v1.20.7
+	gorm.io/gorm v1.20.5
 
 )
