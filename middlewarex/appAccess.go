@@ -6,7 +6,6 @@ import (
 	"net/http"
 
 	"github.com/factly/x/errorx"
-	"github.com/factly/x/loggerx"
 	"github.com/spf13/viper"
 )
 
@@ -17,14 +16,12 @@ func CheckAccess(appSlug string, GetOrganisation func(ctx context.Context) (int,
 
 			uID, err := GetUser(r.Context())
 			if err != nil {
-				loggerx.Error(err)
 				errorx.Render(w, errorx.Parser(errorx.Unauthorized()))
 				return
 			}
 
 			oID, err := GetOrganisation(r.Context())
 			if err != nil {
-				loggerx.Error(err)
 				errorx.Render(w, errorx.Parser(errorx.Unauthorized()))
 				return
 			}
@@ -32,7 +29,6 @@ func CheckAccess(appSlug string, GetOrganisation func(ctx context.Context) (int,
 			path := fmt.Sprint("/organisations/", oID, "/applications/", appSlug, "/access")
 			req, err := http.NewRequest("GET", viper.GetString("kavach_url")+path, nil)
 			if err != nil {
-				loggerx.Error(err)
 				errorx.Render(w, errorx.Parser(errorx.InternalServerError()))
 				return
 			}
@@ -43,7 +39,6 @@ func CheckAccess(appSlug string, GetOrganisation func(ctx context.Context) (int,
 			resp, err := client.Do(req)
 
 			if err != nil {
-				loggerx.Error(err)
 				errorx.Render(w, errorx.Parser(errorx.NetworkError()))
 				return
 			}
