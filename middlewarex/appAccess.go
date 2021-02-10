@@ -6,7 +6,6 @@ import (
 	"net/http"
 	"strings"
 
-	"github.com/factly/x/errorx"
 	"github.com/spf13/viper"
 )
 
@@ -18,20 +17,23 @@ func CheckAccess(appSlug string, index int, GetOrg func(ctx context.Context) (in
 
 				uID, err := GetUser(r.Context())
 				if err != nil {
-					errorx.Render(w, errorx.Parser(errorx.Unauthorized()))
+					w.Header().Add("Location", viper.GetString("kavach_public_url"))
+					w.WriteHeader(http.StatusTemporaryRedirect)
 					return
 				}
 
 				oID, err := GetOrg(r.Context())
 				if err != nil {
-					errorx.Render(w, errorx.Parser(errorx.Unauthorized()))
+					w.Header().Add("Location", viper.GetString("kavach_public_url"))
+					w.WriteHeader(http.StatusTemporaryRedirect)
 					return
 				}
 
 				path := fmt.Sprint("/organisations/", oID, "/applications/", appSlug, "/access")
 				req, err := http.NewRequest("GET", viper.GetString("kavach_url")+path, nil)
 				if err != nil {
-					errorx.Render(w, errorx.Parser(errorx.InternalServerError()))
+					w.Header().Add("Location", viper.GetString("kavach_public_url"))
+					w.WriteHeader(http.StatusTemporaryRedirect)
 					return
 				}
 				req.Header.Set("Content-Type", "application/json")
@@ -41,12 +43,14 @@ func CheckAccess(appSlug string, index int, GetOrg func(ctx context.Context) (in
 				resp, err := client.Do(req)
 
 				if err != nil {
-					errorx.Render(w, errorx.Parser(errorx.NetworkError()))
+					w.Header().Add("Location", viper.GetString("kavach_public_url"))
+					w.WriteHeader(http.StatusTemporaryRedirect)
 					return
 				}
 
 				if resp.StatusCode > 400 && resp.StatusCode <= 500 {
-					errorx.Render(w, errorx.Parser(errorx.Unauthorized()))
+					w.Header().Add("Location", viper.GetString("kavach_public_url"))
+					w.WriteHeader(http.StatusTemporaryRedirect)
 					return
 				}
 			}
