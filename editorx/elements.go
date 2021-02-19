@@ -62,7 +62,8 @@ func getImageElement(image map[string]interface{}) string {
 
 	altText := image["alt_text"].(string)
 	caption := image["caption"].(string)
+	slug := image["slug"].(string)
 
-	html := fmt.Sprintf("\n<img src=\"%s\" alt=\"%s\">", url, altText)
+	html := fmt.Sprintf("\n<div class=\"image\"><img src=\"%s\" id=\"%s\" alt=\"%s\"> </div>", url, slug, altText)
 	return fmt.Sprint(html, "\n<p>", caption, "</p>")
 }
