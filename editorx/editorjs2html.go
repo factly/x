@@ -61,11 +61,7 @@ func EditorjsToHTML(raw map[string]interface{}) (string, error) {
 			html = fmt.Sprint(html, "\n<hr>")
 
 		} else if btype == "uppy" {
-			imageNodes := bdata["nodes"].([]interface{})
-			for _, each := range imageNodes {
-				image := each.(map[string]interface{})
-				html = fmt.Sprint(html, getImageElement(image))
-			}
+			html = fmt.Sprint(html, getImageElement(bdata))
 
 		} else if btype == "embed" {
 			embedHTML, ok := bdata["html"].(string)
