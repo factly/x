@@ -12,12 +12,12 @@ import (
 )
 
 // SearchWithoutQuery calls meili without q
-func SearchWithoutQuery(indexName string, filters string, kind string, limit int64) (map[string]interface{}, error) {
+func SearchWithoutQuery(indexName string, filters string, kind string) (map[string]interface{}, error) {
 
 	body := map[string]interface{}{
 		"filters":      filters,
 		"facetFilters": []string{"kind:" + kind},
-		"limit":        limit,
+		"limit":        1000000,
 	}
 
 	buf := new(bytes.Buffer)
@@ -52,12 +52,12 @@ func SearchWithoutQuery(indexName string, filters string, kind string, limit int
 }
 
 // SearchWithQuery calls meili with q
-func SearchWithQuery(indexName, q, filters, kind string, limit int64) ([]interface{}, error) {
+func SearchWithQuery(indexName, q, filters, kind string) ([]interface{}, error) {
 	result, err := Client.Search(indexName).Search(meilisearch.SearchRequest{
 		Query:        q,
 		Filters:      filters,
 		FacetFilters: []string{"kind:" + kind},
-		Limit:        limit,
+		Limit:        1000000,
 	})
 
 	if err != nil {
