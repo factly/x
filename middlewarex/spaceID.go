@@ -31,6 +31,7 @@ func CheckSpace(index int) func(h http.Handler) http.Handler {
 	}
 }
 
+// SpaceContext adds space id to the context
 func SpaceContext(w http.ResponseWriter, r *http.Request, h http.Handler) {
 	space := r.Header.Get("X-Space")
 	if space == "" {
