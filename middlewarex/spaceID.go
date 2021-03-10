@@ -17,8 +17,8 @@ const SpaceIDKey ctxKeySpaceID = 0
 func CheckSpace(index int) func(h http.Handler) http.Handler {
 	return func(h http.Handler) http.Handler {
 		return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-
-			if strings.Split(strings.Trim(r.URL.Path, "/"), "/")[index] != "spaces" {
+			tokens := strings.Split(strings.Trim(r.URL.Path, "/"), "/")
+			if len(tokens) <= index || tokens[index] != "spaces" {
 				space := r.Header.Get("X-Space")
 				if space == "" {
 					w.WriteHeader(http.StatusUnauthorized)
