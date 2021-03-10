@@ -20,11 +20,9 @@ func CheckSpace(index int) func(h http.Handler) http.Handler {
 			tokens := strings.Split(strings.Trim(r.URL.Path, "/"), "/")
 			if len(tokens) <= index {
 				SpaceContext(w, r, h)
-				return
 			}
 			if tokens[index] != "spaces" {
 				SpaceContext(w, r, h)
-				return
 			}
 			h.ServeHTTP(w, r)
 		})
