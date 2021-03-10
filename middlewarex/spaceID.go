@@ -18,36 +18,28 @@ func CheckSpace(index int) func(h http.Handler) http.Handler {
 	return func(h http.Handler) http.Handler {
 		return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 			tokens := strings.Split(strings.Trim(r.URL.Path, "/"), "/")
-			if len(tokens) <= index {
-				SpaceContext(w, r, h)
+			if len(tokens) <= index || tokens[index] != "spaces" {
+				space := r.Header.Get("X-Space")
+				if space == "" {
+					w.WriteHeader(http.StatusUnauthorized)
+					return
+				}
+
+				uid, err := strconv.Atoi(space)
+				if err != nil || uid == 0 {
+					w.WriteHeader(http.StatusUnauthorized)
+					return
+				}
+				ctx := r.Context()
+
+				ctx = context.WithValue(ctx, SpaceIDKey, uid)
+				h.ServeHTTP(w, r.WithContext(ctx))
 				return
 			}
-			if tokens[index] != "spaces" {
-				SpaceContext(w, r, h)
-				return
-			}
+
 			h.ServeHTTP(w, r)
 		})
 	}
-}
-
-// SpaceContext adds space id to the context
-func SpaceContext(w http.ResponseWriter, r *http.Request, h http.Handler) {
-	space := r.Header.Get("X-Space")
-	if space == "" {
-		w.WriteHeader(http.StatusUnauthorized)
-		return
-	}
-
-	uid, err := strconv.Atoi(space)
-	if err != nil || uid == 0 {
-		w.WriteHeader(http.StatusUnauthorized)
-		return
-	}
-	ctx := r.Context()
-
-	ctx = context.WithValue(ctx, SpaceIDKey, uid)
-	h.ServeHTTP(w, r.WithContext(ctx))
 }
 
 // GetSpace return space ID

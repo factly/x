@@ -14,60 +14,48 @@ func CheckAccess(appSlug string, index int, GetOrg func(ctx context.Context) (in
 	return func(h http.Handler) http.Handler {
 		return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 			tokens := strings.Split(strings.Trim(r.URL.Path, "/"), "/")
-			if len(tokens) <= index {
-				KavachAppAccess(w, r, appSlug, GetOrg)
-				h.ServeHTTP(w, r)
-				return
-			}
-			if tokens[index] != "spaces" {
-				KavachAppAccess(w, r, appSlug, GetOrg)
-				h.ServeHTTP(w, r)
-				return
+			if len(tokens) <= index || tokens[index] != "spaces" {
+
+				uID, err := GetUser(r.Context())
+				if err != nil {
+					w.Header().Add("Location", viper.GetString("kavach_public_url"))
+					w.WriteHeader(http.StatusTemporaryRedirect)
+					return
+				}
+
+				oID, err := GetOrg(r.Context())
+				if err != nil {
+					w.Header().Add("Location", viper.GetString("kavach_public_url"))
+					w.WriteHeader(http.StatusTemporaryRedirect)
+					return
+				}
+
+				path := fmt.Sprint("/organisations/", oID, "/applications/", appSlug, "/access")
+				req, err := http.NewRequest("GET", viper.GetString("kavach_url")+path, nil)
+				if err != nil {
+					w.Header().Add("Location", viper.GetString("kavach_public_url"))
+					w.WriteHeader(http.StatusTemporaryRedirect)
+					return
+				}
+				req.Header.Set("Content-Type", "application/json")
+				req.Header.Set("X-User", fmt.Sprint(uID))
+
+				client := &http.Client{}
+				resp, err := client.Do(req)
+
+				if err != nil {
+					w.Header().Add("Location", viper.GetString("kavach_public_url"))
+					w.WriteHeader(http.StatusTemporaryRedirect)
+					return
+				}
+
+				if resp.StatusCode > 400 && resp.StatusCode <= 500 {
+					w.Header().Add("Location", viper.GetString("kavach_public_url"))
+					w.WriteHeader(http.StatusTemporaryRedirect)
+					return
+				}
 			}
 			h.ServeHTTP(w, r)
 		})
 	}
-}
-
-// KavachAppAccess checks for app access in kavach server
-func KavachAppAccess(w http.ResponseWriter, r *http.Request, appSlug string, GetOrg func(ctx context.Context) (int, error)) {
-	uID, err := GetUser(r.Context())
-	if err != nil {
-		w.Header().Add("Location", viper.GetString("kavach_public_url"))
-		w.WriteHeader(http.StatusTemporaryRedirect)
-		return
-	}
-
-	oID, err := GetOrg(r.Context())
-	if err != nil {
-		w.Header().Add("Location", viper.GetString("kavach_public_url"))
-		w.WriteHeader(http.StatusTemporaryRedirect)
-		return
-	}
-
-	path := fmt.Sprint("/organisations/", oID, "/applications/", appSlug, "/access")
-	req, err := http.NewRequest("GET", viper.GetString("kavach_url")+path, nil)
-	if err != nil {
-		w.Header().Add("Location", viper.GetString("kavach_public_url"))
-		w.WriteHeader(http.StatusTemporaryRedirect)
-		return
-	}
-	req.Header.Set("Content-Type", "application/json")
-	req.Header.Set("X-User", fmt.Sprint(uID))
-
-	client := &http.Client{}
-	resp, err := client.Do(req)
-
-	if err != nil {
-		w.Header().Add("Location", viper.GetString("kavach_public_url"))
-		w.WriteHeader(http.StatusTemporaryRedirect)
-		return
-	}
-
-	if resp.StatusCode > 400 && resp.StatusCode <= 500 {
-		w.Header().Add("Location", viper.GetString("kavach_public_url"))
-		w.WriteHeader(http.StatusTemporaryRedirect)
-		return
-	}
-
 }
