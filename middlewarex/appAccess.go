@@ -16,9 +16,13 @@ func CheckAccess(appSlug string, index int, GetOrg func(ctx context.Context) (in
 			tokens := strings.Split(strings.Trim(r.URL.Path, "/"), "/")
 			if len(tokens) <= index {
 				KavachAppAccess(w, r, appSlug, GetOrg)
+				h.ServeHTTP(w, r)
+				return
 			}
 			if tokens[index] != "spaces" {
 				KavachAppAccess(w, r, appSlug, GetOrg)
+				h.ServeHTTP(w, r)
+				return
 			}
 			h.ServeHTTP(w, r)
 		})
