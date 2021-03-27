@@ -13,7 +13,8 @@ import (
 func CheckAccess(appSlug string, index int, GetOrg func(ctx context.Context) (int, error)) func(h http.Handler) http.Handler {
 	return func(h http.Handler) http.Handler {
 		return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-			if strings.Split(strings.Trim(r.URL.Path, "/"), "/")[index] != "spaces" {
+			tokens := strings.Split(strings.Trim(r.URL.Path, "/"), "/")
+			if len(tokens) <= index || tokens[index] != "spaces" {
 
 				uID, err := GetUser(r.Context())
 				if err != nil {
