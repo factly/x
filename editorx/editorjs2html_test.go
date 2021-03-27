@@ -135,6 +135,29 @@ func TestErrorx(t *testing.T) {
 						}
 					]
 				}
+			},
+			{
+				"type": "uppy",
+				"data": {
+							"id": 8,
+							"created_at": "2020-11-19T06:24:47.273026071Z",
+							"updated_at": "2020-11-19T06:24:47.273026071Z",
+							"deleted_at": {},
+							"name": "test.png",
+							"slug": "test-png",
+							"type": "image/png",
+							"title": " ",
+							"description": "",
+							"caption": "A Caption",
+							"alt_text": "Test alt text",
+							"file_size": 37257,
+							"url": {
+								"proxy": "http://127.0.0.1:7001/dega/test-space/2020/10/1605767086916_test.png",
+								"raw": "http://localhost:9000/dega/test-space/2020/10/1605767086916_test.png"
+							},
+							"dimensions": "100x100",
+							"space_id": 2
+						}
 			}
 		],
 		"version": "2.19.0"
@@ -145,16 +168,17 @@ func TestErrorx(t *testing.T) {
 	}
 
 	outHtml := `
-	<h2>Test heading</h2><p>Test paragraph text is here</p><ol><li>Ordered list item 1</li><li>Ordered list item 2</li></ol><ul><li>Unordered list item 1</li><li>Unordered list item 2</li></ul><blockquote>This is a quote from something or someone</blockquote><p> This is some raw html shit </p><table><tr><th>Name</th><th>Number</th></tr><tr><td>Test 1</td><td>1</td></tr><tr><td>Test 2</td><td>2</td></tr><tr><td>Test 3</td><td>3</td></tr></table><pre><code style="display:block;">package mainimport "fmt"func main() {    fmt.Println("Hello world")}</code></pre><hr><blockquote class="twitter-tweet" data-lang="en_US"><p lang="en" dir="ltr">&quot;Sometimes I like to hold things like this and pretend I&#39;m a giant.&quot; Line by Craig Bierko. Funniest man I have ever met. <a href="https://t.co/b1TmUuckjH">pic.twitter.com/b1TmUuckjH</a></p>&mdash; matthew perry (@MatthewPerry) <a href="https://twitter.com/MatthewPerry/status/1329015312004632576?ref_src=twsrc%5Etfw">November 18, 2020</a></blockquote><script async src="https://platform.twitter.com/widgets.js" charset="utf-8"></script><img src="http://127.0.0.1:7001/dega/test-space/2020/10/1605767086916_test.png" alt="Test alt text"><p>A Caption</p>
+	<h2>Test heading</h2>     <p>Test paragraph text is here</p>        <ol>                <li>Ordered list item 1</li>                <li>Ordered list item 2</li>            </ol>            <ul>                <li>Unordered list item 1</li>                <li>Unordered list item 2</li>            </ul>        <blockquote>This is a quote from something or someone</blockquote>    <p> This is some raw html shit </p>    <table style="border: 1px solid black; width: 50%;">            <tr>                                <th> Name </td>                        <th> Number </td>                        </tr>            <tr>                                 <td>  Test 1  </th>                          <td>  1  </th>                         </tr>            <tr>                                 <td>  Test 2  </th>                          <td>  2  </th>                         </tr>            <tr>                                 <td>  Test 3  </th>                          <td>  3  </th>                         </tr>        </table>      <pre>    <code style="display:block">        package mainimport &#34;fmt&#34;func main() {    fmt.Println(&#34;Hello world&#34;)}    </code>    </pre>    <hr>    <blockquote class="twitter-tweet" data-lang="en_US"><p lang="en" dir="ltr">&quot;Sometimes I like to hold things like this and pretend I&#39;m a giant.&quot; Line by Craig Bierko. Funniest man I have ever met. <a href="https://t.co/b1TmUuckjH">pic.twitter.com/b1TmUuckjH</a></p>&mdash; matthew perry (@MatthewPerry) <a href="https://twitter.com/MatthewPerry/status/1329015312004632576?ref_src=twsrc%5Etfw">November 18, 2020</a></blockquote><script async src="https://platform.twitter.com/widgets.js" charset="utf-8"></script>                        <div class="image">            <img src=" http://127.0.0.1:7001/dega/test-space/2020/10/1605767086916_test.png " id="test-png" alt="Test alt text">            <p>A Caption</p>            </div>                        <div class="image">        <img src=" http://127.0.0.1:7001/dega/test-space/2020/10/1605767086916_test.png " id="test-png" alt="Test alt text">        <p>A Caption</p>        </div>
 	`
 
 	t.Run("convert sample editorjs description to html", func(t *testing.T) {
-		var editorjsBlocks map[string]interface{}
+		editorjsBlocks := make(map[string]interface{})
 		err := json.Unmarshal(testDescription.RawMessage, &editorjsBlocks)
 		if err != nil {
 			t.Error(err)
 		}
 
+		BasePath = "templates"
 		html, err := EditorjsToHTML(editorjsBlocks)
 		if err != nil {
 			t.Error(err)
