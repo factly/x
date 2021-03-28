@@ -18,6 +18,10 @@ func EditorjsToHTML(raw map[string]interface{}) (string, error) {
 		return "", err
 	}
 
+	if err = CheckBlocks(bmap); err != nil {
+		return "", err
+	}
+
 	var tplBuff bytes.Buffer
 	err = tpl.ExecuteTemplate(&tplBuff, "description.gohtml", bmap)
 	if err != nil {

@@ -198,4 +198,35 @@ func TestErrorx(t *testing.T) {
 			t.Fail()
 		}
 	})
+
+	t.Run("throwing error when new block is found", func(t *testing.T) {
+		descString := `{
+		"time": 1605767087876,
+		"blocks": [
+			{
+				"type": "new",
+				"data": {}
+			}
+		],
+		"version": "2.19.0"
+		}
+		`
+		testDescription := postgres.Jsonb{
+			RawMessage: []byte(descString),
+		}
+
+		editorjsBlocks := make(map[string]interface{})
+		err := json.Unmarshal(testDescription.RawMessage, &editorjsBlocks)
+		if err != nil {
+			t.Error(err)
+		}
+
+		BasePath = "templates"
+		_, err = EditorjsToHTML(editorjsBlocks)
+
+		if err == nil || err.Error() != "unparsed block found in description" {
+			t.Fail()
+		}
+
+	})
 }
