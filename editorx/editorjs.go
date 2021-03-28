@@ -35,3 +35,25 @@ func BlockMap(raw map[string]interface{}) ([]map[string]interface{}, error) {
 	}
 	return blockMap, nil
 }
+
+func CheckBlocks(blocks []map[string]interface{}) error {
+	possibleBlocks := map[string]bool{
+		"paragraph": true,
+		"header":    true,
+		"list":      true,
+		"quote":     true,
+		"raw":       true,
+		"code":      true,
+		"delimiter": true,
+		"uppy":      true,
+		"table":     true,
+		"embed":     true,
+	}
+
+	for _, blk := range blocks {
+		if _, found := possibleBlocks[blk["type"].(string)]; !found {
+			return errors.New(`unparsed block found in description`)
+		}
+	}
+	return nil
+}
