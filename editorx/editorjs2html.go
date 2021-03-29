@@ -5,9 +5,11 @@ import (
 	"html/template"
 	"strings"
 	"time"
+
+	"github.com/spf13/viper"
 )
 
-var BasePath = "templates"
+var BasePath = viper.GetString("templates_path")
 
 // EditorjsToHTML converts editorjs description blocks into html
 func EditorjsToHTML(raw map[string]interface{}) (string, error) {
