@@ -7,7 +7,7 @@ import (
 	"time"
 )
 
-var BasePath = "editorx/templates"
+var BasePath = "templates"
 
 // EditorjsToHTML converts editorjs description blocks into html
 func EditorjsToHTML(raw map[string]interface{}) (string, error) {
