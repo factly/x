@@ -9,12 +9,10 @@ import (
 	"github.com/spf13/viper"
 )
 
-var BasePath = viper.GetString("templates_path")
-
 // EditorjsToHTML converts editorjs description blocks into html
 func EditorjsToHTML(raw map[string]interface{}) (string, error) {
 
-	tpl := SetupTemplates(BasePath)
+	tpl := SetupTemplates(viper.GetString("templates_path"))
 
 	bmap, err := BlockMap(raw)
 	if err != nil {

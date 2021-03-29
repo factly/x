@@ -6,6 +6,7 @@ import (
 	"testing"
 
 	"github.com/jinzhu/gorm/dialects/postgres"
+	"github.com/spf13/viper"
 )
 
 func TestErrorx(t *testing.T) {
@@ -178,7 +179,7 @@ func TestErrorx(t *testing.T) {
 			t.Error(err)
 		}
 
-		BasePath = "templates"
+		viper.Set("templates_path", "templates")
 		html, err := EditorjsToHTML(editorjsBlocks)
 		if err != nil {
 			t.Error(err)
@@ -217,7 +218,7 @@ func TestErrorx(t *testing.T) {
 			t.Error(err)
 		}
 
-		BasePath = "templates"
+		viper.Set("templates_path", "templates")
 		_, err = EditorjsToHTML(editorjsBlocks)
 
 		if err == nil || err.Error() != "unparsed block found in description" {
