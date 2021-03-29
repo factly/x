@@ -3,6 +3,7 @@ package editorx
 import (
 	"bytes"
 	"html/template"
+	"strings"
 	"time"
 )
 
@@ -28,7 +29,11 @@ func EditorjsToHTML(raw map[string]interface{}) (string, error) {
 		return "", err
 	}
 
-	return tplBuff.String(), nil
+	html := strings.TrimSpace(tplBuff.String())
+	html = strings.ReplaceAll(html, "\n", "")
+	html = strings.ReplaceAll(html, "\t", "")
+
+	return html, nil
 }
 
 // SetupTemplates setups the templates

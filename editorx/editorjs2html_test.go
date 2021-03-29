@@ -186,10 +186,6 @@ func TestErrorx(t *testing.T) {
 
 		t.Log("\n", html, "\n")
 
-		html = strings.TrimSpace(html)
-		html = strings.ReplaceAll(html, "\n", "")
-		html = strings.ReplaceAll(html, "\t", "")
-
 		outHtml = strings.TrimSpace(outHtml)
 		outHtml = strings.ReplaceAll(outHtml, "\n", "")
 		outHtml = strings.ReplaceAll(outHtml, "\t", "")
