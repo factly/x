@@ -3,15 +3,16 @@ package editorx
 import (
 	"bytes"
 	"html/template"
+	"strings"
 	"time"
-)
 
-var BasePath = "editorx/templates"
+	"github.com/spf13/viper"
+)
 
 // EditorjsToHTML converts editorjs description blocks into html
 func EditorjsToHTML(raw map[string]interface{}) (string, error) {
 
-	tpl := SetupTemplates(BasePath)
+	tpl := SetupTemplates(viper.GetString("templates_path"))
 
 	bmap, err := BlockMap(raw)
 	if err != nil {
@@ -28,7 +29,11 @@ func EditorjsToHTML(raw map[string]interface{}) (string, error) {
 		return "", err
 	}
 
-	return tplBuff.String(), nil
+	html := strings.TrimSpace(tplBuff.String())
+	html = strings.ReplaceAll(html, "\n", "")
+	html = strings.ReplaceAll(html, "\t", "")
+
+	return html, nil
 }
 
 // SetupTemplates setups the templates
