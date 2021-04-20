@@ -24,10 +24,10 @@ func TestErrorx(t *testing.T) {
 		}
 	})
 
-	t.Run("Passing query with page=0 and limit>20", func(t *testing.T) {
+	t.Run("Passing query with page=0 and limit>40", func(t *testing.T) {
 		query := url.Values{
 			"page":  []string{"0"},
-			"limit": []string{"40"},
+			"limit": []string{"50"},
 		}
 
 		off, lim := Parse(query)
