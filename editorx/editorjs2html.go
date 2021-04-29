@@ -37,14 +37,14 @@ func EditorjsToHTML(raw map[string]interface{}) (string, error) {
 }
 
 // SetupTemplates setups the templates
-func SetupTemplates(basePath string) *template.Template {
+func SetupTemplates(path string) *template.Template {
 	return template.Must(template.New("").Funcs(template.FuncMap{
 		"bmap":         BlockMap,
 		"dateFmt":      formatDate,
 		"dateVal":      validateDate,
 		"noesc":        noescape,
 		"multipleImgs": multipleUppy,
-	}).ParseGlob(basePath + "/*"))
+	}).ParseGlob(path))
 }
 
 func formatDate(date time.Time) string {
