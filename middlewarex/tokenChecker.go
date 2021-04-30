@@ -1,7 +1,9 @@
 package middlewarex
 
 import (
+	"context"
 	"encoding/base64"
+	"fmt"
 	"net/http"
 	"strings"
 
@@ -15,9 +17,15 @@ type ValidationBody struct {
 }
 
 // ValidateAPIToken validates the API tokens from kavach server
-func ValidateAPIToken(appName string) func(h http.Handler) http.Handler {
+func ValidateAPIToken(appName string, GetOrganisation func(ctx context.Context) (int, error)) func(h http.Handler) http.Handler {
 	return func(h http.Handler) http.Handler {
 		return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+			oID, err := GetOrganisation(r.Context())
+			if err != nil {
+				w.WriteHeader(http.StatusUnauthorized)
+				return
+			}
+
 			authHeader := r.Header.Get("Authorization")
 			if authHeader == "" {
 				w.WriteHeader(http.StatusUnauthorized)
@@ -38,7 +46,9 @@ func ValidateAPIToken(appName string) func(h http.Handler) http.Handler {
 				SecretToken: tokenParts[1],
 			}
 
-			res, err := requestx.Request("POST", viper.GetString("kavach_url")+"/applications/"+appName+"/validateToken", tokenBody, nil)
+			res, err := requestx.Request("POST", viper.GetString("kavach_url")+"/applications/"+appName+"/validateToken", tokenBody, map[string]string{
+				"X-Organisation": fmt.Sprint(oID),
+			})
 
 			if err != nil || res.StatusCode != http.StatusOK {
 				w.WriteHeader(http.StatusUnauthorized)
