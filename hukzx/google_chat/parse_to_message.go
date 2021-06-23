@@ -50,14 +50,16 @@ func PostToMessage(post hukzx.Post) (*Message, error) {
 	}
 
 	// featured medium section
-	fmSection := Section{}
-	imgWidget := ImageWidget{
-		Image: Image{
-			ImageURL: mediumURL,
-		},
+	if post.Medium != nil {
+		fmSection := Section{}
+		imgWidget := ImageWidget{
+			Image: Image{
+				ImageURL: mediumURL,
+			},
+		}
+		fmSection.Widgets = append(fmSection.Widgets, imgWidget)
+		postCard.Sections = append(postCard.Sections, fmSection)
 	}
-	fmSection.Widgets = append(fmSection.Widgets, imgWidget)
-	postCard.Sections = append(postCard.Sections, fmSection)
 
 	// published date section
 	if post.PublishedDate != nil {
