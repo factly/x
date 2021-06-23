@@ -42,11 +42,18 @@ func PostToMessage(post hukzx.Post) (*Message, error) {
 
 	postCard := Card{}
 
-	postCard.Header = &Header{
-		Title:      post.Title,
-		Subtitle:   post.Excerpt,
-		ImageUrl:   mediumURL,
-		ImageStyle: "IMAGE",
+	if post.Medium != nil {
+		postCard.Header = &Header{
+			Title:      post.Title,
+			Subtitle:   post.Excerpt,
+			ImageUrl:   mediumURL,
+			ImageStyle: "IMAGE",
+		}
+	} else {
+		postCard.Header = &Header{
+			Title:    post.Title,
+			Subtitle: post.Excerpt,
+		}
 	}
 
 	// featured medium section
