@@ -42,18 +42,11 @@ func PostToMessage(post hukzx.Post) (*Message, error) {
 
 	postCard := Card{}
 
-	if post.Medium != nil {
-		postCard.Header = &Header{
-			Title:      post.Title,
-			Subtitle:   post.Excerpt,
-			ImageUrl:   mediumURL,
-			ImageStyle: "IMAGE",
-		}
-	} else {
-		postCard.Header = &Header{
-			Title:    post.Title,
-			Subtitle: post.Excerpt,
-		}
+	postCard.Header = &Header{
+		Title:      post.Title,
+		Subtitle:   post.Excerpt,
+		ImageUrl:   "https://factly.in/wp-content/uploads//2021/01/factly-logo-200-11.png",
+		ImageStyle: "IMAGE",
 	}
 
 	// featured medium section
