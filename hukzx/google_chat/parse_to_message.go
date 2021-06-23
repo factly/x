@@ -14,7 +14,11 @@ func ToMessage(whData whmodel.WebhookData) (*Message, error) {
 
 	switch entityType {
 	case "post":
-		post := whData.Payload.(hukzx.Post)
+		post := hukzx.Post{}
+		byteData, _ := json.Marshal(whData.Payload)
+
+		_ = json.Unmarshal(byteData, &post)
+
 		return PostToMessage(post)
 
 	}
