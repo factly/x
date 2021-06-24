@@ -5,22 +5,46 @@ import (
 	"fmt"
 	"strings"
 
+	factcheckModel "github.com/factly/dega-server/service/fact-check/model"
 	whmodel "github.com/factly/hukz/model"
 	"github.com/factly/x/hukzx"
 )
 
 func ToMessage(whData whmodel.WebhookData) (*Message, error) {
-	entityType := strings.Split(whData.Event, ".")[0]
+	eventTokens := strings.Split(whData.Event, ".")
+	entityType := eventTokens[0]
+	event := eventTokens[1]
 
 	switch entityType {
 	case "post":
 		post := hukzx.Post{}
 		byteData, _ := json.Marshal(whData.Payload)
-
 		_ = json.Unmarshal(byteData, &post)
-
 		return PostToMessage(post)
 
+	case "format":
+		fmt := map[string]interface{}{}
+		byteData, _ := json.Marshal(whData.Payload)
+		_ = json.Unmarshal(byteData, &fmt)
+		return OthCoreToMessage(entityType, event, fmt)
+
+	case "tag":
+		tag := map[string]interface{}{}
+		byteData, _ := json.Marshal(whData.Payload)
+		_ = json.Unmarshal(byteData, &tag)
+		return OthCoreToMessage(entityType, event, tag)
+
+	case "category":
+		cat := map[string]interface{}{}
+		byteData, _ := json.Marshal(whData.Payload)
+		_ = json.Unmarshal(byteData, &cat)
+		return OthCoreToMessage(entityType, event, cat)
+
+	case "claim":
+		claim := factcheckModel.Claim{}
+		byteData, _ := json.Marshal(whData.Payload)
+		_ = json.Unmarshal(byteData, &claim)
+		return ClaimToMessage(claim)
 	}
 
 	return nil, nil
@@ -140,5 +164,124 @@ func PostToMessage(post hukzx.Post) (*Message, error) {
 	postCard.Sections = append(postCard.Sections, descSection)
 
 	message.Cards = append(message.Cards, postCard)
+	return &message, nil
+}
+
+func OthCoreToMessage(entityType, action string, obj map[string]interface{}) (*Message, error) {
+	message := Message{}
+	name := obj["name"].(string)
+	var desc string
+	if entityType == "category" || entityType == "tag" {
+		if in, ok := obj["html_description"]; ok && in != nil {
+			desc = obj["html_description"].(string)
+		}
+	} else {
+		if in, ok := obj["description"]; ok && in != nil {
+			desc = obj["description"].(string)
+		}
+	}
+	card := Card{}
+
+	card.Header = &Header{
+		Title:      fmt.Sprint(strings.Title(entityType), " '", name, "' ", action),
+		ImageUrl:   "https://factly.in/wp-content/uploads//2021/01/factly-logo-200-11.png",
+		ImageStyle: "IMAGE",
+	}
+
+	// description section
+	descSection := Section{}
+	descriptionWidget := TextParagraphWidget{
+		TextParagraph: TextParagraph{
+			Text: desc,
+		},
+	}
+	descSection.Widgets = append(descSection.Widgets, descriptionWidget)
+	card.Sections = append(card.Sections, descSection)
+
+	message.Cards = append(message.Cards, card)
+	return &message, nil
+}
+
+func ClaimToMessage(claim factcheckModel.Claim) (*Message, error) {
+	message := Message{}
+
+	card := Card{}
+
+	card.Header = &Header{
+		Title:      claim.Claim,
+		ImageUrl:   "https://factly.in/wp-content/uploads//2021/01/factly-logo-200-11.png",
+		ImageStyle: "IMAGE",
+	}
+
+	// fact section
+	factSec := Section{}
+	factWidget := TextParagraphWidget{
+		TextParagraph: TextParagraph{
+			Text: fmt.Sprint("<b>Fact: </b>", claim.Fact),
+		},
+	}
+	factSec.Widgets = append(factSec.Widgets, factWidget)
+	card.Sections = append(card.Sections, factSec)
+
+	// date section
+	dateSec := Section{}
+	dateStr := ""
+	if claim.ClaimDate != nil {
+		dateStr = fmt.Sprint("<b>Claim Date: </b>", claim.ClaimDate.Format("January 2, 2006"), "<br>")
+	}
+	if claim.CheckedDate != nil {
+		dateStr = fmt.Sprint(dateStr, "<b>Checked Date: </b>", claim.CheckedDate.Format("January 2, 2006"))
+	}
+	dateWidget := TextParagraphWidget{
+		TextParagraph: TextParagraph{
+			Text: dateStr,
+		},
+	}
+	dateSec.Widgets = append(dateSec.Widgets, dateWidget)
+	card.Sections = append(card.Sections, dateSec)
+
+	// claimant section
+	claimantSec := Section{}
+	claimantStr := fmt.Sprint("<b>Claimant: </b>", claim.Claimant.Name, "<br>", "<b>Description: </b>", claim.Claimant.HTMLDescription)
+	claimantWidget := TextParagraphWidget{
+		TextParagraph: TextParagraph{
+			Text: claimantStr,
+		},
+	}
+	claimantSec.Widgets = append(claimantSec.Widgets, claimantWidget)
+	card.Sections = append(card.Sections, claimantSec)
+
+	// rating section
+	ratingSec := Section{}
+	ratingCol := claim.Rating.BackgroundColour
+	colorObj := map[string]interface{}{}
+
+	_ = json.Unmarshal(ratingCol.RawMessage, &colorObj)
+	color := ""
+	if col, ok := colorObj["hex"]; ok && col != nil {
+		color = colorObj["hex"].(string)
+	}
+
+	ratingString := fmt.Sprintf("<b>Rating: </b> <font color=\"%v\">%v (%v)</font> <br> <b>Description: </b>%v", color, claim.Rating.Name, claim.Rating.NumericValue, claim.Rating.HTMLDescription)
+
+	ratingWidget := TextParagraphWidget{
+		TextParagraph: TextParagraph{
+			Text: ratingString,
+		},
+	}
+	ratingSec.Widgets = append(ratingSec.Widgets, ratingWidget)
+	card.Sections = append(card.Sections, ratingSec)
+
+	// description section
+	descSection := Section{}
+	descriptionWidget := TextParagraphWidget{
+		TextParagraph: TextParagraph{
+			Text: fmt.Sprint("<b>Description: </b>", claim.HTMLDescription),
+		},
+	}
+	descSection.Widgets = append(descSection.Widgets, descriptionWidget)
+	card.Sections = append(card.Sections, descSection)
+
+	message.Cards = append(message.Cards, card)
 	return &message, nil
 }

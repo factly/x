@@ -16,7 +16,7 @@ import (
 )
 
 func TestParseToGoogleChatMessage(t *testing.T) {
-	t.Run("run ToMessage function", func(t *testing.T) {
+	t.Run("run ToMessage function for post", func(t *testing.T) {
 		now := time.Now()
 		mediumURL := map[string]interface{}{
 			"raw": "https://factly.in/wp-content/uploads//2021/01/factly-logo-200-11.png",
@@ -90,6 +90,85 @@ func TestParseToGoogleChatMessage(t *testing.T) {
 							HTMLDescription: "<p>False Rating</p>",
 						},
 					},
+				},
+			},
+		})
+
+		if err != nil {
+			log.Println(err.Error())
+			t.Fail()
+		}
+
+		_, _ = requestx.Request("POST", "https://chat.googleapis.com/v1/spaces/AAAA5dmjUQs/messages?key=AIzaSyDdI0hCZtE6vySjMm-WEfRq3CPzqKqqsHI&token=vaC6YNgeNB63IP0GEPDnLFEzXUg2iQ08bvUhrjkiQ-8%3D", message, nil)
+
+		fmt.Println(message)
+	})
+
+	t.Run("run ToMessage function for category", func(t *testing.T) {
+		now := time.Now()
+		message, err := ToMessage(whmodel.WebhookData{
+			Event:     "category.created",
+			CreatedAt: now,
+			Contains:  []string{"category"},
+			Payload: coreModel.Category{
+				Name:            "Test Category",
+				HTMLDescription: "This is test description for category",
+			},
+		})
+
+		if err != nil {
+			log.Println(err.Error())
+			t.Fail()
+		}
+
+		_, _ = requestx.Request("POST", "https://chat.googleapis.com/v1/spaces/AAAA5dmjUQs/messages?key=AIzaSyDdI0hCZtE6vySjMm-WEfRq3CPzqKqqsHI&token=vaC6YNgeNB63IP0GEPDnLFEzXUg2iQ08bvUhrjkiQ-8%3D", message, nil)
+
+		fmt.Println(message)
+	})
+
+	t.Run("run ToMessage function for format", func(t *testing.T) {
+		now := time.Now()
+		message, err := ToMessage(whmodel.WebhookData{
+			Event:     "format.created",
+			CreatedAt: now,
+			Contains:  []string{"format"},
+			Payload: coreModel.Format{
+				Name:        "Test Format",
+				Description: "This is test description for a format",
+			},
+		})
+
+		if err != nil {
+			log.Println(err.Error())
+			t.Fail()
+		}
+
+		_, _ = requestx.Request("POST", "https://chat.googleapis.com/v1/spaces/AAAA5dmjUQs/messages?key=AIzaSyDdI0hCZtE6vySjMm-WEfRq3CPzqKqqsHI&token=vaC6YNgeNB63IP0GEPDnLFEzXUg2iQ08bvUhrjkiQ-8%3D", message, nil)
+
+		fmt.Println(message)
+	})
+
+	t.Run("run ToMessage function for claim", func(t *testing.T) {
+		now := time.Now()
+		message, err := ToMessage(whmodel.WebhookData{
+			Event:     "claim.created",
+			CreatedAt: now,
+			Contains:  []string{"claim"},
+			Payload: factcheckModel.Claim{
+				Claim:           "WHO approved a home remedy found by an ex-student of St. Xavier’s High School in Mumbai",
+				Fact:            "There is no authentic information that proves an Indian student from St. Xavier’s High School in Mumbai, found a cure for the COVID-19 and that this cure was accepted by the WHO. Apart from vaccination, WHO has not approved any medicine or home remedy to cure COVID-19",
+				ClaimDate:       &now,
+				CheckedDate:     &now,
+				HTMLDescription: "<h2>This is a test claim</h2>",
+				Claimant: factcheckModel.Claimant{
+					Name:            "Tester",
+					HTMLDescription: "<h2>This is a test claimant</h2>",
+				},
+				Rating: factcheckModel.Rating{
+					Name:             "False",
+					BackgroundColour: postgres.Jsonb{RawMessage: []byte(`{"hex":"#FF0000"}`)},
+					NumericValue:     5,
+					HTMLDescription:  "<h2>The claim is false</h2>",
 				},
 			},
 		})
