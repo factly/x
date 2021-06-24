@@ -318,11 +318,6 @@ func PolicyToMessage(event string, pol coreModel.Policy) (*Message, error) {
 		ImageStyle: "IMAGE",
 	}
 
-	userMap := make(map[string]coreModel.Author)
-	for _, each := range pol.Users {
-		userMap[fmt.Sprint(each.ID)] = each
-	}
-
 	// users section
 	if len(pol.Users) > 0 {
 		userSection := Section{}
