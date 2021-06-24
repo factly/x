@@ -26,19 +26,31 @@ func ToMessage(whData whmodel.WebhookData) (*Message, error) {
 		fmt := map[string]interface{}{}
 		byteData, _ := json.Marshal(whData.Payload)
 		_ = json.Unmarshal(byteData, &fmt)
-		return OthCoreToMessage(entityType, event, fmt)
+		return OthToMessage(entityType, event, fmt)
 
 	case "tag":
 		tag := map[string]interface{}{}
 		byteData, _ := json.Marshal(whData.Payload)
 		_ = json.Unmarshal(byteData, &tag)
-		return OthCoreToMessage(entityType, event, tag)
+		return OthToMessage(entityType, event, tag)
 
 	case "category":
 		cat := map[string]interface{}{}
 		byteData, _ := json.Marshal(whData.Payload)
 		_ = json.Unmarshal(byteData, &cat)
-		return OthCoreToMessage(entityType, event, cat)
+		return OthToMessage(entityType, event, cat)
+
+	case "rating":
+		rat := map[string]interface{}{}
+		byteData, _ := json.Marshal(whData.Payload)
+		_ = json.Unmarshal(byteData, &rat)
+		return OthToMessage(entityType, event, rat)
+
+	case "claimant":
+		claimant := map[string]interface{}{}
+		byteData, _ := json.Marshal(whData.Payload)
+		_ = json.Unmarshal(byteData, &claimant)
+		return OthToMessage(entityType, event, claimant)
 
 	case "claim":
 		claim := factcheckModel.Claim{}
@@ -167,11 +179,11 @@ func PostToMessage(post hukzx.Post) (*Message, error) {
 	return &message, nil
 }
 
-func OthCoreToMessage(entityType, action string, obj map[string]interface{}) (*Message, error) {
+func OthToMessage(entityType, action string, obj map[string]interface{}) (*Message, error) {
 	message := Message{}
 	name := obj["name"].(string)
 	var desc string
-	if entityType == "category" || entityType == "tag" {
+	if entityType != "format" {
 		if in, ok := obj["html_description"]; ok && in != nil {
 			desc = obj["html_description"].(string)
 		}
