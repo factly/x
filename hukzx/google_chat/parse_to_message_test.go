@@ -182,4 +182,57 @@ func TestParseToGoogleChatMessage(t *testing.T) {
 
 		fmt.Println(message)
 	})
+
+	t.Run("run ToMessage function for policy", func(t *testing.T) {
+		now := time.Now()
+		message, err := ToMessage(whmodel.WebhookData{
+			Event:     "policy.created",
+			CreatedAt: now,
+			Contains:  []string{"policy"},
+			Payload: coreModel.Policy{
+				ID:          "testpolicy",
+				Name:        "testpolicy",
+				Description: "This policy is for testing",
+				Permissions: []coreModel.Permission{
+					{
+						Resource: "post",
+						Actions:  []string{"create", "update", "delete", "get"},
+					},
+					{
+						Resource: "category",
+						Actions:  []string{"get"},
+					},
+					{
+						Resource: "tag",
+						Actions:  []string{"create", "get"},
+					},
+					{
+						Resource: "format",
+						Actions:  []string{"get"},
+					},
+				},
+				Users: []coreModel.Author{
+					{
+						FirstName: "Test",
+						LastName:  "User",
+						Email:     "testuser@org.com",
+					},
+					{
+						FirstName: "Another",
+						LastName:  "User",
+						Email:     "anotheruser@org.com",
+					},
+				},
+			},
+		})
+
+		if err != nil {
+			log.Println(err.Error())
+			t.Fail()
+		}
+
+		_, _ = requestx.Request("POST", "https://chat.googleapis.com/v1/spaces/AAAA5dmjUQs/messages?key=AIzaSyDdI0hCZtE6vySjMm-WEfRq3CPzqKqqsHI&token=vaC6YNgeNB63IP0GEPDnLFEzXUg2iQ08bvUhrjkiQ-8%3D", message, nil)
+
+		fmt.Println(message)
+	})
 }

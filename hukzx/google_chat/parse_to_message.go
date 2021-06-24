@@ -5,6 +5,7 @@ import (
 	"fmt"
 	"strings"
 
+	coreModel "github.com/factly/dega-server/service/core/model"
 	factcheckModel "github.com/factly/dega-server/service/fact-check/model"
 	whmodel "github.com/factly/hukz/model"
 	"github.com/factly/x/hukzx"
@@ -20,7 +21,7 @@ func ToMessage(whData whmodel.WebhookData) (*Message, error) {
 		post := hukzx.Post{}
 		byteData, _ := json.Marshal(whData.Payload)
 		_ = json.Unmarshal(byteData, &post)
-		return PostToMessage(post)
+		return PostToMessage(event, post)
 
 	case "format":
 		fmt := map[string]interface{}{}
@@ -56,13 +57,20 @@ func ToMessage(whData whmodel.WebhookData) (*Message, error) {
 		claim := factcheckModel.Claim{}
 		byteData, _ := json.Marshal(whData.Payload)
 		_ = json.Unmarshal(byteData, &claim)
-		return ClaimToMessage(claim)
+		return ClaimToMessage(event, claim)
+
+	case "policy":
+		pol := coreModel.Policy{}
+		byteData, _ := json.Marshal(whData.Payload)
+		_ = json.Unmarshal(byteData, &pol)
+		return PolicyToMessage(event, pol)
+
 	}
 
 	return nil, nil
 }
 
-func PostToMessage(post hukzx.Post) (*Message, error) {
+func PostToMessage(event string, post hukzx.Post) (*Message, error) {
 	message := Message{}
 
 	mediumURL := ""
@@ -79,7 +87,7 @@ func PostToMessage(post hukzx.Post) (*Message, error) {
 	postCard := Card{}
 
 	postCard.Header = &Header{
-		Title:      post.Title,
+		Title:      fmt.Sprint(strings.Title(event), " Post: ", post.Title),
 		Subtitle:   post.Excerpt,
 		ImageUrl:   "https://factly.in/wp-content/uploads//2021/01/factly-logo-200-11.png",
 		ImageStyle: "IMAGE",
@@ -214,13 +222,13 @@ func OthToMessage(entityType, action string, obj map[string]interface{}) (*Messa
 	return &message, nil
 }
 
-func ClaimToMessage(claim factcheckModel.Claim) (*Message, error) {
+func ClaimToMessage(event string, claim factcheckModel.Claim) (*Message, error) {
 	message := Message{}
 
 	card := Card{}
 
 	card.Header = &Header{
-		Title:      claim.Claim,
+		Title:      fmt.Sprint(strings.Title(event), " Claim: ", claim.Claim),
 		ImageUrl:   "https://factly.in/wp-content/uploads//2021/01/factly-logo-200-11.png",
 		ImageStyle: "IMAGE",
 	}
@@ -294,6 +302,67 @@ func ClaimToMessage(claim factcheckModel.Claim) (*Message, error) {
 	descSection.Widgets = append(descSection.Widgets, descriptionWidget)
 	card.Sections = append(card.Sections, descSection)
 
+	message.Cards = append(message.Cards, card)
+	return &message, nil
+}
+
+func PolicyToMessage(event string, pol coreModel.Policy) (*Message, error) {
+	message := Message{}
+
+	card := Card{}
+
+	card.Header = &Header{
+		Title:      fmt.Sprint(strings.Title(event), " Policy: ", pol.Name),
+		Subtitle:   pol.Description,
+		ImageUrl:   "https://factly.in/wp-content/uploads//2021/01/factly-logo-200-11.png",
+		ImageStyle: "IMAGE",
+	}
+
+	userMap := make(map[string]coreModel.Author)
+	for _, each := range pol.Users {
+		userMap[fmt.Sprint(each.ID)] = each
+	}
+
+	// users section
+	if len(pol.Users) > 0 {
+		userSection := Section{}
+		userString := "<b>Users: </b> <br>"
+		for _, each := range pol.Users {
+			userString = fmt.Sprint(userString, each.FirstName, " ", each.LastName, " (", each.Email, ")<br>")
+		}
+		userWidget := TextParagraphWidget{
+			TextParagraph: TextParagraph{
+				Text: userString,
+			},
+		}
+		userSection.Widgets = append(userSection.Widgets, userWidget)
+		card.Sections = append(card.Sections, userSection)
+	}
+
+	// permission section
+	if len(pol.Permissions) > 0 {
+		perSection := Section{}
+		perString := "<b>Permissions: </b> <br>"
+		for _, each := range pol.Permissions {
+			perString = fmt.Sprint(perString, "Resource: ", each.Resource)
+
+			actionStr := "["
+			for _, act := range each.Actions {
+				actionStr = fmt.Sprint(actionStr, act, ",")
+			}
+			actionStr = strings.TrimRight(actionStr, ",")
+			actionStr = fmt.Sprint(actionStr, "]")
+
+			perString = fmt.Sprint(perString, " ", actionStr, "<br>")
+		}
+		perWidget := TextParagraphWidget{
+			TextParagraph: TextParagraph{
+				Text: perString,
+			},
+		}
+		perSection.Widgets = append(perSection.Widgets, perWidget)
+		card.Sections = append(card.Sections, perSection)
+	}
 	message.Cards = append(message.Cards, card)
 	return &message, nil
 }
