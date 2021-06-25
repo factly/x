@@ -9,6 +9,7 @@ import (
 
 	coreModel "github.com/factly/dega-server/service/core/model"
 	factcheckModel "github.com/factly/dega-server/service/fact-check/model"
+	podcastModel "github.com/factly/dega-server/service/podcast/model"
 	whmodel "github.com/factly/hukz/model"
 	"github.com/factly/x/hukzx"
 	"github.com/factly/x/requestx"
@@ -231,6 +232,85 @@ func TestParseToGoogleChatMessage(t *testing.T) {
 			t.Fail()
 		}
 
+		_, _ = requestx.Request("POST", "https://chat.googleapis.com/v1/spaces/AAAA5dmjUQs/messages?key=AIzaSyDdI0hCZtE6vySjMm-WEfRq3CPzqKqqsHI&token=vaC6YNgeNB63IP0GEPDnLFEzXUg2iQ08bvUhrjkiQ-8%3D", message, nil)
+
+		fmt.Println(message)
+	})
+
+	t.Run("run ToMessage function for podcast", func(t *testing.T) {
+		now := time.Now()
+		mediumURL := map[string]interface{}{
+			"raw": "https://factly.in/wp-content/uploads//2021/01/factly-logo-200-11.png",
+		}
+		urlBytes, _ := json.Marshal(mediumURL)
+		message, err := ToMessage(whmodel.WebhookData{
+			Event:     "podcast.created",
+			CreatedAt: now,
+			Contains:  []string{"podcast"},
+			Payload: podcastModel.Podcast{
+				Title:           "Test Podcast",
+				Slug:            "test-podcast",
+				HTMLDescription: "<h2>This is a Test podcast</h2>",
+				Language:        "English",
+				PrimaryCategory: &coreModel.Category{
+					Name:            "Prim Category",
+					HTMLDescription: "<b>Prime category</b>",
+				},
+				Categories: []coreModel.Category{
+					{
+						Name: "Category 1",
+					},
+					{
+						Name: "Category 2",
+					},
+				},
+				Medium: &coreModel.Medium{
+					URL: postgres.Jsonb{RawMessage: urlBytes},
+				},
+			},
+		})
+
+		if err != nil {
+			log.Println(err.Error())
+			t.Fail()
+		}
+		_, _ = requestx.Request("POST", "https://chat.googleapis.com/v1/spaces/AAAA5dmjUQs/messages?key=AIzaSyDdI0hCZtE6vySjMm-WEfRq3CPzqKqqsHI&token=vaC6YNgeNB63IP0GEPDnLFEzXUg2iQ08bvUhrjkiQ-8%3D", message, nil)
+
+		fmt.Println(message)
+	})
+
+	t.Run("run ToMessage function for episode", func(t *testing.T) {
+		now := time.Now()
+		mediumURL := map[string]interface{}{
+			"raw": "https://factly.in/wp-content/uploads//2021/01/factly-logo-200-11.png",
+		}
+		urlBytes, _ := json.Marshal(mediumURL)
+		message, err := ToMessage(whmodel.WebhookData{
+			Event:     "episode.created",
+			CreatedAt: now,
+			Contains:  []string{"episode"},
+			Payload: podcastModel.Episode{
+				Title:           "Test Episode",
+				Slug:            "test-episode",
+				HTMLDescription: "<h2>This is a Test Episode</h2>",
+				Season:          1,
+				Episode:         1,
+				Podcast: &podcastModel.Podcast{
+					Title:           "Test Podcast",
+					HTMLDescription: "<b>Prime category</b>",
+				},
+				Medium: &coreModel.Medium{
+					URL: postgres.Jsonb{RawMessage: urlBytes},
+				},
+				PublishedDate: &now,
+				AudioURL:      "http://websrvr90va.audiovideoweb.com/va90web25003/companions/Foundations%20of%20Rock/13.02.mp3",
+			},
+		})
+
+		if err != nil {
+			log.Println(err.Error())
+			t.Fail()
+		}
 		_, _ = requestx.Request("POST", "https://chat.googleapis.com/v1/spaces/AAAA5dmjUQs/messages?key=AIzaSyDdI0hCZtE6vySjMm-WEfRq3CPzqKqqsHI&token=vaC6YNgeNB63IP0GEPDnLFEzXUg2iQ08bvUhrjkiQ-8%3D", message, nil)
 
 		fmt.Println(message)

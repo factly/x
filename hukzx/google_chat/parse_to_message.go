@@ -7,6 +7,7 @@ import (
 
 	coreModel "github.com/factly/dega-server/service/core/model"
 	factcheckModel "github.com/factly/dega-server/service/fact-check/model"
+	podcastModel "github.com/factly/dega-server/service/podcast/model"
 	whmodel "github.com/factly/hukz/model"
 	"github.com/factly/x/hukzx"
 )
@@ -65,6 +66,17 @@ func ToMessage(whData whmodel.WebhookData) (*Message, error) {
 		_ = json.Unmarshal(byteData, &pol)
 		return PolicyToMessage(event, pol)
 
+	case "podcast":
+		pod := podcastModel.Podcast{}
+		byteData, _ := json.Marshal(whData.Payload)
+		_ = json.Unmarshal(byteData, &pod)
+		return PodcastToMessage(event, pod)
+
+	case "episode":
+		epi := podcastModel.Episode{}
+		byteData, _ := json.Marshal(whData.Payload)
+		_ = json.Unmarshal(byteData, &epi)
+		return EpisodeToMessage(event, epi)
 	}
 
 	return nil, nil
@@ -358,6 +370,165 @@ func PolicyToMessage(event string, pol coreModel.Policy) (*Message, error) {
 		perSection.Widgets = append(perSection.Widgets, perWidget)
 		card.Sections = append(card.Sections, perSection)
 	}
+	message.Cards = append(message.Cards, card)
+	return &message, nil
+}
+
+func PodcastToMessage(event string, podcast podcastModel.Podcast) (*Message, error) {
+	message := Message{}
+
+	mediumURL := ""
+	if podcast.Medium != nil {
+		urlObj := map[string]interface{}{}
+		if err := json.Unmarshal(podcast.Medium.URL.RawMessage, &urlObj); err != nil {
+			return nil, err
+		}
+		if _, ok := urlObj["raw"]; ok {
+			mediumURL = urlObj["raw"].(string)
+		}
+	}
+
+	card := Card{}
+
+	card.Header = &Header{
+		Title:      fmt.Sprint(strings.Title(event), " Podcast: ", podcast.Title),
+		Subtitle:   fmt.Sprint("Language: ", podcast.Language),
+		ImageUrl:   "https://factly.in/wp-content/uploads//2021/01/factly-logo-200-11.png",
+		ImageStyle: "IMAGE",
+	}
+
+	// featured medium section
+	if podcast.Medium != nil {
+		fmSection := Section{}
+		imgWidget := ImageWidget{
+			Image: Image{
+				ImageURL: mediumURL,
+			},
+		}
+		fmSection.Widgets = append(fmSection.Widgets, imgWidget)
+		card.Sections = append(card.Sections, fmSection)
+	}
+
+	// primary category section
+	if podcast.PrimaryCategory != nil {
+		pcSection := Section{}
+		pcWidget := TextParagraphWidget{
+			TextParagraph: TextParagraph{
+				Text: fmt.Sprint("<b>Primary Category: </b>", podcast.PrimaryCategory.Name),
+			},
+		}
+		pcSection.Widgets = append(pcSection.Widgets, pcWidget)
+		card.Sections = append(card.Sections, pcSection)
+	}
+
+	// categories section
+	if len(podcast.Categories) > 0 {
+		catSection := Section{}
+		catString := "<b>Categories: </b>"
+		for _, each := range podcast.Categories {
+			catString = fmt.Sprint(catString, each.Name, ", ")
+		}
+		catString = strings.TrimRight(catString, ", ")
+		catWidget := TextParagraphWidget{
+			TextParagraph: TextParagraph{
+				Text: catString,
+			},
+		}
+		catSection.Widgets = append(catSection.Widgets, catWidget)
+		card.Sections = append(card.Sections, catSection)
+	}
+
+	// description section
+	descSection := Section{}
+	descriptionWidget := TextParagraphWidget{
+		TextParagraph: TextParagraph{
+			Text: fmt.Sprint("<b>Description: </b>", podcast.HTMLDescription),
+		},
+	}
+	descSection.Widgets = append(descSection.Widgets, descriptionWidget)
+	card.Sections = append(card.Sections, descSection)
+
+	message.Cards = append(message.Cards, card)
+	return &message, nil
+}
+
+func EpisodeToMessage(event string, episode podcastModel.Episode) (*Message, error) {
+	message := Message{}
+
+	mediumURL := ""
+	if episode.Medium != nil {
+		urlObj := map[string]interface{}{}
+		if err := json.Unmarshal(episode.Medium.URL.RawMessage, &urlObj); err != nil {
+			return nil, err
+		}
+		if _, ok := urlObj["raw"]; ok {
+			mediumURL = urlObj["raw"].(string)
+		}
+	}
+
+	card := Card{}
+
+	card.Header = &Header{
+		Title:      fmt.Sprint(strings.Title(event), " Episode: ", episode.Title),
+		Subtitle:   fmt.Sprint("Season: ", episode.Season, " Episode: ", episode.Episode),
+		ImageUrl:   "https://factly.in/wp-content/uploads//2021/01/factly-logo-200-11.png",
+		ImageStyle: "IMAGE",
+	}
+
+	// featured medium section
+	if episode.Medium != nil {
+		fmSection := Section{}
+		imgWidget := ImageWidget{
+			Image: Image{
+				ImageURL: mediumURL,
+			},
+		}
+		fmSection.Widgets = append(fmSection.Widgets, imgWidget)
+		card.Sections = append(card.Sections, fmSection)
+	}
+
+	// podcast section
+	podSection := Section{}
+	podWidget := TextParagraphWidget{
+		TextParagraph: TextParagraph{
+			Text: fmt.Sprint("<b>Podcast: </b>", episode.Podcast.Title),
+		},
+	}
+	podSection.Widgets = append(podSection.Widgets, podWidget)
+	card.Sections = append(card.Sections, podSection)
+
+	// published date section
+	if episode.PublishedDate != nil {
+		dateSection := Section{}
+		dateTxtWidget := TextParagraphWidget{
+			TextParagraph: TextParagraph{
+				Text: fmt.Sprint("<b>Published Date:</b> ", episode.PublishedDate.Format("January 2, 2006")),
+			},
+		}
+		dateSection.Widgets = append(dateSection.Widgets, dateTxtWidget)
+		card.Sections = append(card.Sections, dateSection)
+	}
+
+	// description section
+	descSection := Section{}
+	descriptionWidget := TextParagraphWidget{
+		TextParagraph: TextParagraph{
+			Text: fmt.Sprint("<b>Description: </b>", episode.HTMLDescription),
+		},
+	}
+	descSection.Widgets = append(descSection.Widgets, descriptionWidget)
+	card.Sections = append(card.Sections, descSection)
+
+	// audio section
+	audioSection := Section{}
+	audioWidget := TextParagraphWidget{
+		TextParagraph: TextParagraph{
+			Text: fmt.Sprintf(`<b>Audio URL: </b><a href="%v">%v</a> `, episode.AudioURL, episode.Title),
+		},
+	}
+	audioSection.Widgets = append(audioSection.Widgets, audioWidget)
+	card.Sections = append(card.Sections, audioSection)
+
 	message.Cards = append(message.Cards, card)
 	return &message, nil
 }
