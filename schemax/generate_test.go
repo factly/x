@@ -13,7 +13,7 @@ import (
 func TestGenerateSchemas(t *testing.T) {
 	t.Run("generate article schema from a post", func(t *testing.T) {
 		now := time.Now()
-		articleSchema := GetArticleSchema(postData{
+		articleSchema := GetArticleSchema(PostData{
 			Post: model.Post{
 				Base:          config.Base{CreatedAt: now},
 				Title:         "Test Title",

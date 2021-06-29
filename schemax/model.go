@@ -8,7 +8,7 @@ import (
 	"github.com/jinzhu/gorm/dialects/postgres"
 )
 
-type postData struct {
+type PostData struct {
 	model.Post
 	Authors []model.Author         `json:"authors"`
 	Claims  []factCheckModel.Claim `json:"claims"`

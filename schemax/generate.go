@@ -8,7 +8,7 @@ import (
 	factCheckModel "github.com/factly/dega-server/service/fact-check/model"
 )
 
-func GetArticleSchema(obj postData, space model.Space) ArticleSchema {
+func GetArticleSchema(obj PostData, space model.Space) ArticleSchema {
 	jsonLogo := map[string]string{}
 	if space.Logo != nil {
 		rawLogo, _ := space.Logo.URL.RawMessage.MarshalJSON()
@@ -38,7 +38,7 @@ func GetArticleSchema(obj postData, space model.Space) ArticleSchema {
 	return articleSchema
 }
 
-func GetFactCheckSchema(obj postData, space model.Space, ratings []factCheckModel.Rating) []FactCheckSchema {
+func GetFactCheckSchema(obj PostData, space model.Space, ratings []factCheckModel.Rating) []FactCheckSchema {
 	result := make([]FactCheckSchema, 0)
 
 	bestRating := 5
@@ -77,7 +77,7 @@ func GetFactCheckSchema(obj postData, space model.Space, ratings []factCheckMode
 	return result
 }
 
-func GetSchemas(obj postData, space model.Space, ratings []factCheckModel.Rating) []interface{} {
+func GetSchemas(obj PostData, space model.Space, ratings []factCheckModel.Rating) []interface{} {
 	schemas := make([]interface{}, 0)
 
 	schemas = append(schemas, GetArticleSchema(obj, space))
