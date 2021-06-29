@@ -61,7 +61,7 @@ type Image struct {
 type Publisher struct {
 	Type string `json:"@type"`
 	Name string `json:"name"`
-	Logo Image  `json:"logo"`
+	Logo Image  `json:"logo,omitempty"`
 }
 
 // ArticleSchema for article
@@ -69,7 +69,7 @@ type ArticleSchema struct {
 	Context       string     `json:"@context"`
 	Type          string     `json:"@type"`
 	Headline      string     `json:"headline"`
-	Image         []Image    `json:"image"`
+	Image         []Image    `json:"image,omitempty"`
 	DatePublished *time.Time `json:"datePublished"`
 	Author        []Author   `json:"author"`
 	Publisher     Publisher  `json:"publisher"`

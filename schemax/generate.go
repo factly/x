@@ -19,9 +19,11 @@ func GetArticleSchema(obj PostData, space model.Space) ArticleSchema {
 	articleSchema.Context = "https://schema.org"
 	articleSchema.Type = "NewsArticle"
 	articleSchema.Headline = obj.Post.Title
-	articleSchema.Image = append(articleSchema.Image, Image{
-		Type: "ImageObject",
-		URL:  jsonLogo["raw"]})
+	if _, ok := jsonLogo["raw"]; ok {
+		articleSchema.Image = append(articleSchema.Image, Image{
+			Type: "ImageObject",
+			URL:  jsonLogo["raw"]})
+	}
 	articleSchema.DatePublished = obj.Post.PublishedDate
 	for _, eachAuthor := range obj.Authors {
 		articleSchema.Author = append(articleSchema.Author, Author{
@@ -32,8 +34,10 @@ func GetArticleSchema(obj PostData, space model.Space) ArticleSchema {
 	}
 	articleSchema.Publisher.Type = "Organization"
 	articleSchema.Publisher.Name = space.Name
-	articleSchema.Publisher.Logo.Type = "ImageObject"
-	articleSchema.Publisher.Logo.URL = jsonLogo["raw"]
+	if _, ok := jsonLogo["raw"]; ok {
+		articleSchema.Publisher.Logo.Type = "ImageObject"
+		articleSchema.Publisher.Logo.URL = jsonLogo["raw"]
+	}
 
 	return articleSchema
 }
