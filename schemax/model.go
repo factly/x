@@ -1,4 +1,4 @@
-package schemas
+package schemax
 
 import (
 	"time"
