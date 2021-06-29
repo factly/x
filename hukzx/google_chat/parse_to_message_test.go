@@ -12,7 +12,6 @@ import (
 	podcastModel "github.com/factly/dega-server/service/podcast/model"
 	whmodel "github.com/factly/hukz/model"
 	"github.com/factly/x/hukzx"
-	"github.com/factly/x/requestx"
 	"github.com/jinzhu/gorm/dialects/postgres"
 )
 
@@ -100,8 +99,6 @@ func TestParseToGoogleChatMessage(t *testing.T) {
 			t.Fail()
 		}
 
-		_, _ = requestx.Request("POST", "https://chat.googleapis.com/v1/spaces/AAAA5dmjUQs/messages?key=AIzaSyDdI0hCZtE6vySjMm-WEfRq3CPzqKqqsHI&token=vaC6YNgeNB63IP0GEPDnLFEzXUg2iQ08bvUhrjkiQ-8%3D", message, nil)
-
 		fmt.Println(message)
 	})
 
@@ -122,8 +119,6 @@ func TestParseToGoogleChatMessage(t *testing.T) {
 			t.Fail()
 		}
 
-		_, _ = requestx.Request("POST", "https://chat.googleapis.com/v1/spaces/AAAA5dmjUQs/messages?key=AIzaSyDdI0hCZtE6vySjMm-WEfRq3CPzqKqqsHI&token=vaC6YNgeNB63IP0GEPDnLFEzXUg2iQ08bvUhrjkiQ-8%3D", message, nil)
-
 		fmt.Println(message)
 	})
 
@@ -143,8 +138,6 @@ func TestParseToGoogleChatMessage(t *testing.T) {
 			log.Println(err.Error())
 			t.Fail()
 		}
-
-		_, _ = requestx.Request("POST", "https://chat.googleapis.com/v1/spaces/AAAA5dmjUQs/messages?key=AIzaSyDdI0hCZtE6vySjMm-WEfRq3CPzqKqqsHI&token=vaC6YNgeNB63IP0GEPDnLFEzXUg2iQ08bvUhrjkiQ-8%3D", message, nil)
 
 		fmt.Println(message)
 	})
@@ -178,8 +171,6 @@ func TestParseToGoogleChatMessage(t *testing.T) {
 			log.Println(err.Error())
 			t.Fail()
 		}
-
-		_, _ = requestx.Request("POST", "https://chat.googleapis.com/v1/spaces/AAAA5dmjUQs/messages?key=AIzaSyDdI0hCZtE6vySjMm-WEfRq3CPzqKqqsHI&token=vaC6YNgeNB63IP0GEPDnLFEzXUg2iQ08bvUhrjkiQ-8%3D", message, nil)
 
 		fmt.Println(message)
 	})
@@ -232,8 +223,6 @@ func TestParseToGoogleChatMessage(t *testing.T) {
 			t.Fail()
 		}
 
-		_, _ = requestx.Request("POST", "https://chat.googleapis.com/v1/spaces/AAAA5dmjUQs/messages?key=AIzaSyDdI0hCZtE6vySjMm-WEfRq3CPzqKqqsHI&token=vaC6YNgeNB63IP0GEPDnLFEzXUg2iQ08bvUhrjkiQ-8%3D", message, nil)
-
 		fmt.Println(message)
 	})
 
@@ -274,7 +263,6 @@ func TestParseToGoogleChatMessage(t *testing.T) {
 			log.Println(err.Error())
 			t.Fail()
 		}
-		_, _ = requestx.Request("POST", "https://chat.googleapis.com/v1/spaces/AAAA5dmjUQs/messages?key=AIzaSyDdI0hCZtE6vySjMm-WEfRq3CPzqKqqsHI&token=vaC6YNgeNB63IP0GEPDnLFEzXUg2iQ08bvUhrjkiQ-8%3D", message, nil)
 
 		fmt.Println(message)
 	})
@@ -311,7 +299,6 @@ func TestParseToGoogleChatMessage(t *testing.T) {
 			log.Println(err.Error())
 			t.Fail()
 		}
-		_, _ = requestx.Request("POST", "https://chat.googleapis.com/v1/spaces/AAAA5dmjUQs/messages?key=AIzaSyDdI0hCZtE6vySjMm-WEfRq3CPzqKqqsHI&token=vaC6YNgeNB63IP0GEPDnLFEzXUg2iQ08bvUhrjkiQ-8%3D", message, nil)
 
 		fmt.Println(message)
 	})
