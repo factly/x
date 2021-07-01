@@ -5,6 +5,9 @@ import (
 	"fmt"
 	"strings"
 
+	coreModel "github.com/factly/dega-server/service/core/model"
+	factcheckModel "github.com/factly/dega-server/service/fact-check/model"
+	podcastModel "github.com/factly/dega-server/service/podcast/model"
 	whmodel "github.com/factly/hukz/model"
 	"github.com/factly/x/hukzx"
 	"github.com/k3a/html2text"
@@ -51,6 +54,30 @@ func ToMessage(whData whmodel.WebhookData) (*Message, error) {
 		byteData, _ := json.Marshal(whData.Payload)
 		_ = json.Unmarshal(byteData, &claimant)
 		return OthToMessage(entityType, event, claimant)
+
+	case "claim":
+		claim := factcheckModel.Claim{}
+		byteData, _ := json.Marshal(whData.Payload)
+		_ = json.Unmarshal(byteData, &claim)
+		return ClaimToMessage(event, claim)
+
+	case "policy":
+		pol := coreModel.Policy{}
+		byteData, _ := json.Marshal(whData.Payload)
+		_ = json.Unmarshal(byteData, &pol)
+		return PolicyToMessage(event, pol)
+
+	case "podcast":
+		pod := podcastModel.Podcast{}
+		byteData, _ := json.Marshal(whData.Payload)
+		_ = json.Unmarshal(byteData, &pod)
+		return PodcastToMessage(event, pod)
+
+	case "episode":
+		epi := podcastModel.Episode{}
+		byteData, _ := json.Marshal(whData.Payload)
+		_ = json.Unmarshal(byteData, &epi)
+		return EpisodeToMessage(event, epi)
 
 	}
 
@@ -209,5 +236,292 @@ func OthToMessage(entityType, action string, obj map[string]interface{}) (*Messa
 		},
 	})
 
+	return &message, nil
+}
+
+func ClaimToMessage(event string, claim factcheckModel.Claim) (*Message, error) {
+	message := Message{}
+
+	// title block
+	message.Blocks = append(message.Blocks, Block{
+		Type: "section",
+		Text: TextBlock{
+			Type: "mrkdwn",
+			Text: fmt.Sprintf("*%v Claim: %v*", strings.Title(event), claim.Claim),
+		},
+		Accessory: ImageAccessory{
+			Type:     "image",
+			ImageURL: "https://factly.in/wp-content/uploads//2021/01/factly-logo-200-11.png",
+			AltText:  "Factly",
+		},
+	})
+
+	// fact section
+	message.Blocks = append(message.Blocks, Block{
+		Type: "section",
+		Text: TextBlock{
+			Type: "mrkdwn",
+			Text: html2text.HTML2Text(claim.Fact),
+		},
+	})
+
+	// date section
+	dateStr := ""
+	if claim.ClaimDate != nil {
+		dateStr = fmt.Sprint("*Claim Date:* ", claim.ClaimDate.Format("January 2, 2006"), "\n")
+	}
+	if claim.CheckedDate != nil {
+		dateStr = fmt.Sprint(dateStr, "*Checked Date:* ", claim.CheckedDate.Format("January 2, 2006"))
+	}
+	message.Blocks = append(message.Blocks, Block{
+		Type: "section",
+		Text: TextBlock{
+			Type: "mrkdwn",
+			Text: dateStr,
+		},
+	})
+
+	// claimant section
+	message.Blocks = append(message.Blocks, Block{
+		Type: "section",
+		Text: TextBlock{
+			Type: "mrkdwn",
+			Text: fmt.Sprint("*Claimant:* ", claim.Claimant.Name, "\n", "*Description:* ", html2text.HTML2Text(claim.Claimant.HTMLDescription)),
+		},
+	})
+
+	// rating section
+	ratingString := fmt.Sprint("*Rating:* ", claim.Rating.Name, "(", claim.Rating.NumericValue, ")", "\n", "*Description:* ", html2text.HTML2Text(claim.Rating.HTMLDescription))
+	message.Blocks = append(message.Blocks, Block{
+		Type: "section",
+		Text: TextBlock{
+			Type: "mrkdwn",
+			Text: html2text.HTML2Text(ratingString),
+		},
+	})
+
+	// description section
+	message.Blocks = append(message.Blocks, Block{
+		Type: "section",
+		Text: TextBlock{
+			Type: "mrkdwn",
+			Text: fmt.Sprint("*Description:* ", html2text.HTML2Text(claim.HTMLDescription)),
+		},
+	})
+	return &message, nil
+}
+
+func PolicyToMessage(event string, pol coreModel.Policy) (*Message, error) {
+	message := Message{}
+
+	// title block
+	message.Blocks = append(message.Blocks, Block{
+		Type: "section",
+		Text: TextBlock{
+			Type: "mrkdwn",
+			Text: fmt.Sprintf("*%v Policy: %v*", strings.Title(event), pol.Name),
+		},
+		Accessory: ImageAccessory{
+			Type:     "image",
+			ImageURL: "https://factly.in/wp-content/uploads//2021/01/factly-logo-200-11.png",
+			AltText:  "Factly",
+		},
+	})
+
+	// users section
+	if len(pol.Users) > 0 {
+		userString := "*Users:* \n"
+		for _, each := range pol.Users {
+			userString = fmt.Sprint(userString, each.FirstName, " ", each.LastName, " (", each.Email, ")\n")
+		}
+		message.Blocks = append(message.Blocks, Block{
+			Type: "section",
+			Text: TextBlock{
+				Type: "mrkdwn",
+				Text: userString,
+			},
+		})
+	}
+
+	// permission section
+	if len(pol.Permissions) > 0 {
+		perString := "*Permissions:* \n"
+		for _, each := range pol.Permissions {
+			perString = fmt.Sprint(perString, "Resource: ", each.Resource)
+
+			actionStr := "["
+			for _, act := range each.Actions {
+				actionStr = fmt.Sprint(actionStr, act, ",")
+			}
+			actionStr = strings.TrimRight(actionStr, ",")
+			actionStr = fmt.Sprint(actionStr, "]")
+
+			perString = fmt.Sprint(perString, " ", actionStr, "\n")
+		}
+		message.Blocks = append(message.Blocks, Block{
+			Type: "section",
+			Text: TextBlock{
+				Type: "mrkdwn",
+				Text: perString,
+			},
+		})
+	}
+	return &message, nil
+}
+
+func PodcastToMessage(event string, podcast podcastModel.Podcast) (*Message, error) {
+	message := Message{}
+
+	mediumURL := ""
+	if podcast.Medium != nil {
+		urlObj := map[string]interface{}{}
+		if err := json.Unmarshal(podcast.Medium.URL.RawMessage, &urlObj); err != nil {
+			return nil, err
+		}
+		if _, ok := urlObj["raw"]; ok {
+			mediumURL = urlObj["raw"].(string)
+		}
+	}
+
+	// title block
+	message.Blocks = append(message.Blocks, Block{
+		Type: "section",
+		Text: TextBlock{
+			Type: "mrkdwn",
+			Text: fmt.Sprintf("*%v Podcast: %v* \n*Language:* %v", strings.Title(event), podcast.Title, podcast.Language),
+		},
+		Accessory: ImageAccessory{
+			Type:     "image",
+			ImageURL: "https://factly.in/wp-content/uploads//2021/01/factly-logo-200-11.png",
+			AltText:  "Factly",
+		},
+	})
+
+	// featured medium block
+	message.Blocks = append(message.Blocks, Block{
+		Type: "image",
+		Title: TextBlock{
+			Type: "plain_text",
+			Text: fmt.Sprintf("%v", podcast.Title),
+		},
+		ImageURL: mediumURL,
+		AltText:  podcast.Medium.Title,
+	})
+
+	// primary category section
+	if podcast.PrimaryCategory != nil {
+		message.Blocks = append(message.Blocks, Block{
+			Type: "section",
+			Text: TextBlock{
+				Type: "mrkdwn",
+				Text: fmt.Sprint("*Primary Category:* ", podcast.PrimaryCategory.Name),
+			},
+		})
+	}
+
+	// categories section
+	if len(podcast.Categories) > 0 {
+		catString := "*Categories:* "
+		for _, each := range podcast.Categories {
+			catString = fmt.Sprint(catString, each.Name, ", ")
+		}
+		catString = strings.TrimRight(catString, ", ")
+		message.Blocks = append(message.Blocks, Block{
+			Type: "section",
+			Text: TextBlock{
+				Type: "mrkdwn",
+				Text: catString,
+			},
+		})
+	}
+
+	// description section
+	message.Blocks = append(message.Blocks, Block{
+		Type: "section",
+		Text: TextBlock{
+			Type: "mrkdwn",
+			Text: fmt.Sprint("*Description:* ", html2text.HTML2Text(podcast.HTMLDescription)),
+		},
+	})
+	return &message, nil
+}
+
+func EpisodeToMessage(event string, episode podcastModel.Episode) (*Message, error) {
+	message := Message{}
+
+	mediumURL := ""
+	if episode.Medium != nil {
+		urlObj := map[string]interface{}{}
+		if err := json.Unmarshal(episode.Medium.URL.RawMessage, &urlObj); err != nil {
+			return nil, err
+		}
+		if _, ok := urlObj["raw"]; ok {
+			mediumURL = urlObj["raw"].(string)
+		}
+	}
+
+	// title block
+	message.Blocks = append(message.Blocks, Block{
+		Type: "section",
+		Text: TextBlock{
+			Type: "mrkdwn",
+			Text: fmt.Sprintf("*%v Episode: %v* \n*Season:* %v  *Episode:* %v", strings.Title(event), episode.Title, episode.Season, episode.Episode),
+		},
+		Accessory: ImageAccessory{
+			Type:     "image",
+			ImageURL: "https://factly.in/wp-content/uploads//2021/01/factly-logo-200-11.png",
+			AltText:  "Factly",
+		},
+	})
+
+	// featured medium block
+	message.Blocks = append(message.Blocks, Block{
+		Type: "image",
+		Title: TextBlock{
+			Type: "plain_text",
+			Text: fmt.Sprintf("%v", episode.Title),
+		},
+		ImageURL: mediumURL,
+		AltText:  episode.Medium.Title,
+	})
+
+	// podcast section
+	message.Blocks = append(message.Blocks, Block{
+		Type: "section",
+		Text: TextBlock{
+			Type: "mrkdwn",
+			Text: fmt.Sprint("*Podcast:* ", episode.Podcast.Title),
+		},
+	})
+
+	// published date section
+	if episode.PublishedDate != nil {
+		message.Blocks = append(message.Blocks, Block{
+			Type: "section",
+			Text: TextBlock{
+				Type: "mrkdwn",
+				Text: fmt.Sprint("*Published Date:* ", episode.PublishedDate.Format("January 2, 2006")),
+			},
+		})
+	}
+
+	// description section
+	message.Blocks = append(message.Blocks, Block{
+		Type: "section",
+		Text: TextBlock{
+			Type: "mrkdwn",
+			Text: fmt.Sprint("*Description* ", html2text.HTML2Text(episode.HTMLDescription)),
+		},
+	})
+
+	// audio section
+	audiourl := fmt.Sprintf(`<a href="%v">%v</a>`, episode.AudioURL, episode.Title)
+	message.Blocks = append(message.Blocks, Block{
+		Type: "section",
+		Text: TextBlock{
+			Type: "mrkdwn",
+			Text: fmt.Sprint(`*Audio URL:* `, html2text.HTML2Text(audiourl)),
+		},
+	})
 	return &message, nil
 }

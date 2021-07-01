@@ -9,6 +9,7 @@ import (
 
 	coreModel "github.com/factly/dega-server/service/core/model"
 	factcheckModel "github.com/factly/dega-server/service/fact-check/model"
+	podcastModel "github.com/factly/dega-server/service/podcast/model"
 	whmodel "github.com/factly/hukz/model"
 	"github.com/factly/x/hukzx"
 	"github.com/jinzhu/gorm/dialects/postgres"
@@ -139,5 +140,168 @@ func TestParseToSlackMessage(t *testing.T) {
 		}
 		fmt.Println("MESSAGE: ", message)
 
+	})
+
+	t.Run("run ToMessage function for claim", func(t *testing.T) {
+		now := time.Now()
+		message, err := ToMessage(whmodel.WebhookData{
+			Event:     "claim.created",
+			CreatedAt: now,
+			Contains:  []string{"claim"},
+			Payload: factcheckModel.Claim{
+				Claim:           "WHO approved a home remedy found by an ex-student of St. Xavier’s High School in Mumbai",
+				Fact:            "There is no authentic information that proves an Indian student from St. Xavier’s High School in Mumbai, found a cure for the COVID-19 and that this cure was accepted by the WHO. Apart from vaccination, WHO has not approved any medicine or home remedy to cure COVID-19",
+				ClaimDate:       &now,
+				CheckedDate:     &now,
+				HTMLDescription: "<h2>This is a test claim</h2>",
+				Claimant: factcheckModel.Claimant{
+					Name:            "Tester",
+					HTMLDescription: "<h2>This is a test claimant</h2>",
+				},
+				Rating: factcheckModel.Rating{
+					Name:             "False",
+					BackgroundColour: postgres.Jsonb{RawMessage: []byte(`{"hex":"#FF0000"}`)},
+					NumericValue:     5,
+					HTMLDescription:  "<h2>The claim is false</h2>",
+				},
+			},
+		})
+
+		if err != nil {
+			log.Println(err.Error())
+			t.Fail()
+		}
+
+		fmt.Println("MESSAGE: ", message)
+	})
+
+	t.Run("run ToMessage function for policy", func(t *testing.T) {
+		now := time.Now()
+		message, err := ToMessage(whmodel.WebhookData{
+			Event:     "policy.created",
+			CreatedAt: now,
+			Contains:  []string{"policy"},
+			Payload: coreModel.Policy{
+				ID:          "testpolicy",
+				Name:        "testpolicy",
+				Description: "This policy is for testing",
+				Permissions: []coreModel.Permission{
+					{
+						Resource: "post",
+						Actions:  []string{"create", "update", "delete", "get"},
+					},
+					{
+						Resource: "category",
+						Actions:  []string{"get"},
+					},
+					{
+						Resource: "tag",
+						Actions:  []string{"create", "get"},
+					},
+					{
+						Resource: "format",
+						Actions:  []string{"get"},
+					},
+				},
+				Users: []coreModel.Author{
+					{
+						FirstName: "Test",
+						LastName:  "User",
+						Email:     "testuser@org.com",
+					},
+					{
+						FirstName: "Another",
+						LastName:  "User",
+						Email:     "anotheruser@org.com",
+					},
+				},
+			},
+		})
+
+		if err != nil {
+			log.Println(err.Error())
+			t.Fail()
+		}
+
+		fmt.Println("MESSAGE: ", message)
+	})
+
+	t.Run("run ToMessage function for podcast", func(t *testing.T) {
+		now := time.Now()
+		mediumURL := map[string]interface{}{
+			"raw": "https://factly.in/wp-content/uploads//2021/01/factly-logo-200-11.png",
+		}
+		urlBytes, _ := json.Marshal(mediumURL)
+		message, err := ToMessage(whmodel.WebhookData{
+			Event:     "podcast.created",
+			CreatedAt: now,
+			Contains:  []string{"podcast"},
+			Payload: podcastModel.Podcast{
+				Title:           "Test Podcast",
+				Slug:            "test-podcast",
+				HTMLDescription: "<h2>This is a Test podcast</h2>",
+				Language:        "English",
+				PrimaryCategory: &coreModel.Category{
+					Name:            "Prim Category",
+					HTMLDescription: "<b>Prime category</b>",
+				},
+				Categories: []coreModel.Category{
+					{
+						Name: "Category 1",
+					},
+					{
+						Name: "Category 2",
+					},
+				},
+				Medium: &coreModel.Medium{
+					Title: "Test Medium",
+					URL:   postgres.Jsonb{RawMessage: urlBytes},
+				},
+			},
+		})
+
+		if err != nil {
+			log.Println(err.Error())
+			t.Fail()
+		}
+
+		fmt.Println("MESSAGE: ", message)
+	})
+
+	t.Run("run ToMessage function for episode", func(t *testing.T) {
+		now := time.Now()
+		mediumURL := map[string]interface{}{
+			"raw": "https://factly.in/wp-content/uploads//2021/01/factly-logo-200-11.png",
+		}
+		urlBytes, _ := json.Marshal(mediumURL)
+		message, err := ToMessage(whmodel.WebhookData{
+			Event:     "episode.created",
+			CreatedAt: now,
+			Contains:  []string{"episode"},
+			Payload: podcastModel.Episode{
+				Title:           "Test Episode",
+				Slug:            "test-episode",
+				HTMLDescription: "<h2>This is a Test Episode</h2>",
+				Season:          1,
+				Episode:         1,
+				Podcast: &podcastModel.Podcast{
+					Title:           "Test Podcast",
+					HTMLDescription: "<b>Prime category</b>",
+				},
+				Medium: &coreModel.Medium{
+					Title: "TEst Medium",
+					URL:   postgres.Jsonb{RawMessage: urlBytes},
+				},
+				PublishedDate: &now,
+				AudioURL:      "http://websrvr90va.audiovideoweb.com/va90web25003/companions/Foundations%20of%20Rock/13.02.mp3",
+			},
+		})
+
+		if err != nil {
+			log.Println(err.Error())
+			t.Fail()
+		}
+
+		fmt.Println("MESSAGE: ", message)
 	})
 }
