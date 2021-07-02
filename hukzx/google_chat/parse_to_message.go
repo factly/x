@@ -2,6 +2,7 @@ package googlechat
 
 import (
 	"encoding/json"
+	"errors"
 	"fmt"
 	"strings"
 
@@ -79,7 +80,7 @@ func ToMessage(whData whmodel.WebhookData) (*Message, error) {
 		return EpisodeToMessage(event, epi)
 	}
 
-	return nil, nil
+	return nil, errors.New("entity not found")
 }
 
 func PostToMessage(event string, post hukzx.Post) (*Message, error) {
