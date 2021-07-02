@@ -148,15 +148,25 @@ func PostToMessage(event string, post hukzx.Post) (*Message, error) {
 	})
 
 	// featured medium block
-	message.Blocks = append(message.Blocks, Block{
-		Type: "image",
-		Title: TextBlock{
-			Type: "plain_text",
-			Text: fmt.Sprintf("%v", post.Title),
-		},
-		ImageURL: mediumURL,
-		AltText:  post.Medium.Title,
-	})
+	if post.Medium != nil {
+		alt_text := "alt text"
+		if post.Medium.AltText != "" {
+			alt_text = post.Medium.AltText
+		} else if post.Medium.Name != "" {
+			alt_text = post.Medium.Name
+		} else if post.Medium.Title != "" {
+			alt_text = post.Medium.Title
+		}
+		message.Blocks = append(message.Blocks, Block{
+			Type: "image",
+			Title: TextBlock{
+				Type: "plain_text",
+				Text: fmt.Sprintf("%v", post.Title),
+			},
+			ImageURL: mediumURL,
+			AltText:  alt_text,
+		})
+	}
 
 	// published date section
 	if post.PublishedDate != nil {
@@ -432,16 +442,26 @@ func PodcastToMessage(event string, podcast podcastModel.Podcast) (*Message, err
 		},
 	})
 
-	// featured medium block
-	message.Blocks = append(message.Blocks, Block{
-		Type: "image",
-		Title: TextBlock{
-			Type: "plain_text",
-			Text: fmt.Sprintf("%v", podcast.Title),
-		},
-		ImageURL: mediumURL,
-		AltText:  podcast.Medium.Title,
-	})
+	if podcast.Medium != nil {
+		// featured medium block
+		alt_text := "alt text"
+		if podcast.Medium.AltText != "" {
+			alt_text = podcast.Medium.AltText
+		} else if podcast.Medium.Name != "" {
+			alt_text = podcast.Medium.Name
+		} else if podcast.Medium.Title != "" {
+			alt_text = podcast.Medium.Title
+		}
+		message.Blocks = append(message.Blocks, Block{
+			Type: "image",
+			Title: TextBlock{
+				Type: "plain_text",
+				Text: fmt.Sprintf("%v", podcast.Title),
+			},
+			ImageURL: mediumURL,
+			AltText:  alt_text,
+		})
+	}
 
 	// primary category section
 	if podcast.PrimaryCategory != nil {
@@ -510,15 +530,25 @@ func EpisodeToMessage(event string, episode podcastModel.Episode) (*Message, err
 	})
 
 	// featured medium block
-	message.Blocks = append(message.Blocks, Block{
-		Type: "image",
-		Title: TextBlock{
-			Type: "plain_text",
-			Text: fmt.Sprintf("%v", episode.Title),
-		},
-		ImageURL: mediumURL,
-		AltText:  episode.Medium.Title,
-	})
+	if episode.Medium != nil {
+		alt_text := "alt text"
+		if episode.Medium.AltText != "" {
+			alt_text = episode.Medium.AltText
+		} else if episode.Medium.Name != "" {
+			alt_text = episode.Medium.Name
+		} else if episode.Medium.Title != "" {
+			alt_text = episode.Medium.Title
+		}
+		message.Blocks = append(message.Blocks, Block{
+			Type: "image",
+			Title: TextBlock{
+				Type: "plain_text",
+				Text: fmt.Sprintf("%v", episode.Title),
+			},
+			ImageURL: mediumURL,
+			AltText:  alt_text,
+		})
+	}
 
 	// podcast section
 	message.Blocks = append(message.Blocks, Block{
