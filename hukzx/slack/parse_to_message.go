@@ -100,23 +100,45 @@ func ToMessage(whData whmodel.WebhookData) (*Message, error) {
 		return EpisodeToMessage(event, epi)
 
 	default:
-		return DefaultMessage(whData), nil
-
+		return DefaultMessage(whData)
 	}
 }
 
-func DefaultMessage(data interface{}) *Message {
-	bytes, _ := json.Marshal(data)
+func DefaultMessage(whData whmodel.WebhookData) (*Message, error) {
+	eventTokens := strings.Split(whData.Event, ".")
+	entityType := eventTokens[0]
+	event := eventTokens[1]
+
+	obj := map[string]interface{}{}
+	byteData, _ := json.Marshal(whData.Payload)
+	if err := json.Unmarshal(byteData, &obj); err != nil {
+		return nil, err
+	}
+
+	var name string = ""
+
+	if in, ok := obj["name"]; ok && in != nil {
+		name = obj["name"].(string)
+	} else if in, ok := obj["title"]; ok && in != nil {
+		name = obj["title"].(string)
+	}
 
 	message := &Message{}
+
+	// title block
 	message.Blocks = append(message.Blocks, Block{
 		Type: "section",
 		Text: TextBlock{
-			Type: "plain_text",
-			Text: string(bytes),
+			Type: "mrkdwn",
+			Text: fmt.Sprintf("*%v %v: %v*", strings.Title(event), strings.Title(entityType), name),
+		},
+		Accessory: ImageAccessory{
+			Type:     "image",
+			ImageURL: "https://factly.in/wp-content/uploads//2021/01/factly-logo-200-11.png",
+			AltText:  "Factly",
 		},
 	})
-	return message
+	return message, nil
 }
 
 func PostToMessage(event string, post hukzx.Post) (*Message, error) {
