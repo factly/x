@@ -2,7 +2,6 @@ package googlechat
 
 import (
 	"encoding/json"
-	"errors"
 	"fmt"
 	"strings"
 
@@ -22,65 +21,103 @@ func ToMessage(whData whmodel.WebhookData) (*Message, error) {
 	case "post":
 		post := hukzx.Post{}
 		byteData, _ := json.Marshal(whData.Payload)
-		_ = json.Unmarshal(byteData, &post)
+		if err := json.Unmarshal(byteData, &post); err != nil {
+			return nil, err
+		}
 		return PostToMessage(event, post)
 
 	case "format":
 		fmt := map[string]interface{}{}
 		byteData, _ := json.Marshal(whData.Payload)
-		_ = json.Unmarshal(byteData, &fmt)
+		if err := json.Unmarshal(byteData, &fmt); err != nil {
+			return nil, err
+		}
 		return OthToMessage(entityType, event, fmt)
 
 	case "tag":
 		tag := map[string]interface{}{}
 		byteData, _ := json.Marshal(whData.Payload)
-		_ = json.Unmarshal(byteData, &tag)
+		if err := json.Unmarshal(byteData, &tag); err != nil {
+			return nil, err
+		}
 		return OthToMessage(entityType, event, tag)
 
 	case "category":
 		cat := map[string]interface{}{}
 		byteData, _ := json.Marshal(whData.Payload)
-		_ = json.Unmarshal(byteData, &cat)
+		if err := json.Unmarshal(byteData, &cat); err != nil {
+			return nil, err
+		}
 		return OthToMessage(entityType, event, cat)
 
 	case "rating":
 		rat := map[string]interface{}{}
 		byteData, _ := json.Marshal(whData.Payload)
-		_ = json.Unmarshal(byteData, &rat)
+		if err := json.Unmarshal(byteData, &rat); err != nil {
+			return nil, err
+		}
 		return OthToMessage(entityType, event, rat)
 
 	case "claimant":
 		claimant := map[string]interface{}{}
 		byteData, _ := json.Marshal(whData.Payload)
-		_ = json.Unmarshal(byteData, &claimant)
+		if err := json.Unmarshal(byteData, &claimant); err != nil {
+			return nil, err
+		}
 		return OthToMessage(entityType, event, claimant)
 
 	case "claim":
 		claim := factcheckModel.Claim{}
 		byteData, _ := json.Marshal(whData.Payload)
-		_ = json.Unmarshal(byteData, &claim)
+		if err := json.Unmarshal(byteData, &claim); err != nil {
+			return nil, err
+		}
 		return ClaimToMessage(event, claim)
 
 	case "policy":
 		pol := coreModel.Policy{}
 		byteData, _ := json.Marshal(whData.Payload)
-		_ = json.Unmarshal(byteData, &pol)
+		if err := json.Unmarshal(byteData, &pol); err != nil {
+			return nil, err
+		}
 		return PolicyToMessage(event, pol)
 
 	case "podcast":
 		pod := podcastModel.Podcast{}
 		byteData, _ := json.Marshal(whData.Payload)
-		_ = json.Unmarshal(byteData, &pod)
+		if err := json.Unmarshal(byteData, &pod); err != nil {
+			return nil, err
+		}
 		return PodcastToMessage(event, pod)
 
 	case "episode":
 		epi := podcastModel.Episode{}
 		byteData, _ := json.Marshal(whData.Payload)
-		_ = json.Unmarshal(byteData, &epi)
+		if err := json.Unmarshal(byteData, &epi); err != nil {
+			return nil, err
+		}
 		return EpisodeToMessage(event, epi)
-	}
 
-	return nil, errors.New("entity not found")
+	default:
+		return DefaultMessage(whData), nil
+	}
+}
+
+func DefaultMessage(data interface{}) *Message {
+	bytes, _ := json.Marshal(data)
+	message := Message{}
+	card := Card{}
+	sec := Section{}
+	txtWidget := TextParagraphWidget{
+		TextParagraph: TextParagraph{
+			Text: string(bytes),
+		},
+	}
+	sec.Widgets = append(sec.Widgets, txtWidget)
+	card.Sections = append(card.Sections, sec)
+	message.Cards = append(message.Cards, card)
+
+	return &message
 }
 
 func PostToMessage(event string, post hukzx.Post) (*Message, error) {
