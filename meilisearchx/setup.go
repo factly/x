@@ -1,7 +1,6 @@
 package meilisearchx
 
 import (
-	"log"
 	"net/http"
 	"time"
 
@@ -13,7 +12,7 @@ import (
 var Client *meilisearch.Client
 
 // SetupMeiliSearch setups the meili search server index
-func SetupMeiliSearch(indexName string, searchableAttributes []string) {
+func SetupMeiliSearch(indexName string, searchableAttributes []string) error {
 	Client = meilisearch.NewClientWithCustomHTTPClient(meilisearch.Config{
 		Host:   viper.GetString("meili_url"),
 		APIKey: viper.GetString("meili_key"),
@@ -28,20 +27,21 @@ func SetupMeiliSearch(indexName string, searchableAttributes []string) {
 			PrimaryKey: "object_id",
 		})
 		if err != nil {
-			log.Fatal(err)
+			return err
 		}
 	}
 
 	_, err = Client.Settings(indexName).UpdateAttributesForFaceting([]string{"kind"})
 	if err != nil {
-		log.Fatal(err)
+		return err
 	}
 
 	// Add searchable attributes in index
 	_, err = Client.Settings(indexName).UpdateSearchableAttributes(searchableAttributes)
 	if err != nil {
-		log.Fatal(err)
+		return err
 	}
+	return nil
 }
 
 // []string{"name", "slug", "description", "title", "subtitle", "excerpt", "site_title", "site_address", "tag_line", "review", "review_tag_line"}
