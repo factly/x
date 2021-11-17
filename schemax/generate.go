@@ -66,7 +66,7 @@ func GetFactCheckSchema(obj PostData, space model.Space, ratings []factCheckMode
 		claimSchema.ReviewRating.RatingValue = each.Rating.NumericValue
 		claimSchema.ReviewRating.AlternateName = each.Rating.Name
 		claimSchema.ReviewRating.BestRating = bestRating
-		claimSchema.ReviewRating.RatingExplaination = each.Fact
+		claimSchema.ReviewRating.RatingExplanation = each.Fact
 		claimSchema.ReviewRating.WorstRating = worstRating
 		claimSchema.ItemReviewed.Type = "Claim"
 		if each.CheckedDate != nil {
