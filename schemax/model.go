@@ -31,12 +31,12 @@ type ItemReviewed struct {
 
 // ReviewRating type
 type ReviewRating struct {
-	Type               string `json:"@type"`
-	RatingValue        int    `json:"ratingValue"`
-	BestRating         int    `json:"bestRating"`
-	WorstRating        int    `json:"worstRating"`
-	AlternateName      string `json:"alternateName"`
-	RatingExplaination string `json:"ratingExplaination"`
+	Type              string `json:"@type"`
+	RatingValue       int    `json:"ratingValue"`
+	BestRating        int    `json:"bestRating"`
+	WorstRating       int    `json:"worstRating"`
+	AlternateName     string `json:"alternateName"`
+	RatingExplanation string `json:"ratingExplanation"`
 }
 
 // FactCheckSchema for factcheck
