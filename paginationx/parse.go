@@ -14,7 +14,7 @@ func Parse(query url.Values) (int, int) {
 	offset := 0 // no. of records to skip
 	limit := 20 // limit
 
-	if perPage > 20 && perPage <= 100 {
+	if perPage > 0 && perPage <= 100 {
 		limit = perPage
 	}
 
