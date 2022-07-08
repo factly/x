@@ -52,11 +52,9 @@ func SearchWithoutQuery(indexName string, filters string, kind string) (map[stri
 }
 
 // SearchWithQuery calls meili with q
-func SearchWithQuery(indexName, q, filters, kind string) ([]interface{}, error) {
-	result, err := Client.Search(indexName).Search(meilisearch.SearchRequest{
-		Query:        q,
-		Filters:      filters,
-		FacetFilters: []string{"kind:" + kind},
+func SearchWithQuery(indexName, q, filters string) ([]interface{}, error) {
+	result, err := Client.Index(indexName).Search(q, &meilisearch.SearchRequest{
+		Filter:      filters,
 		Limit:        1000000,
 	})
 
