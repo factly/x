@@ -18,7 +18,7 @@ func UpdateDocument(indexName string, data map[string]interface{}) error {
 
 	arr := []map[string]interface{}{data}
 
-	_, err := Client.Documents(indexName).AddOrUpdate(arr)
+	_, err := Client.Index(indexName).UpdateDocuments(arr)
 	if err != nil {
 		return err
 	}
