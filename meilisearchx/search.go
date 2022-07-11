@@ -10,7 +10,10 @@ import (
 // SearchWithQuery calls meili with q
 func SearchWithQuery(indexName, q, filters, kind string) ([]interface{}, error) {
 	filter := [][]string{}
-	filter = append(filter, []string{filters}, []string{fmt.Sprintf("kind=%s", kind)})
+	filter = append(filter, []string{filters})
+	if kind != "" {
+		filter = append(filter, []string{fmt.Sprintf("kind=%s", kind)})
+	}
 	result, err := Client.Index(indexName).Search(q, &meilisearch.SearchRequest{
 		Filter: filter,
 		Limit:  1000000,
