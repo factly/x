@@ -11,7 +11,7 @@ import (
 var Client *meilisearch.Client
 
 // SetupMeiliSearch setups the meili search server index
-func SetupMeiliSearch(indexName string, searchableAttributes []string) error {
+func SetupMeiliSearch(indexName string, searchableAttributes []string, filterableAttributes []string) error {
 	Client = meilisearch.NewClient(
 		meilisearch.ClientConfig{
 			Host:    viper.GetString("meili_url"),
@@ -33,7 +33,6 @@ func SetupMeiliSearch(indexName string, searchableAttributes []string) error {
 	}
 
 	// adding filterable attributes to the meilisearch instance
-	filterableAttributes := []string{"kind"}
 	_, err = Client.Index(indexName).UpdateFilterableAttributes(&filterableAttributes)
 	if err != nil {
 		return err
