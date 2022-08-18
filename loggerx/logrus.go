@@ -75,34 +75,40 @@ func Error(err error) {
 	logrusLogger.WithFields(logFields).Error(err)
 }
 
-func Info(info string) {
-	logFields := GetDefaultFields()
-
-	if pc, file, line, ok := runtime.Caller(1); ok {
+func ErrorWithoutRequest(err error) {
+	logrusFields := logrus.Fields{}
+	pc, file, line, ok := runtime.Caller(1)
+	if ok {
 		funcName := runtime.FuncForPC(pc).Name()
-
 		pwd, _ := os.Getwd()
 		relPath := file[len(pwd):]
-
-		logFields["source"] = fmt.Sprintf("%s:%s:%v", relPath, path.Base(funcName), line)
+		logrusFields["source"] = fmt.Sprintf("%s:%s:%v", relPath, path.Base(funcName), line)
 	}
+	logrusLogger.WithFields(logrusFields).Error(err)
+}
 
-	logrusLogger.WithFields(logFields).Info(info)
+func Info(info string) {
+	logrusFields := logrus.Fields{}
+	pc, file, line, ok := runtime.Caller(1)
+	if ok {
+		funcName := runtime.FuncForPC(pc).Name()
+		pwd, _ := os.Getwd()
+		relPath := file[len(pwd):]
+		logrusFields["source"] = fmt.Sprintf("%s:%s:%v", relPath, path.Base(funcName), line)
+	}
+	logrusLogger.WithFields(logrusFields).Info(info)
 }
 
 func Warning(warning string) {
-	logFields := GetDefaultFields()
-
-	if pc, file, line, ok := runtime.Caller(1); ok {
+	logrusFields := logrus.Fields{}
+	pc, file, line, ok := runtime.Caller(1)
+	if ok {
 		funcName := runtime.FuncForPC(pc).Name()
-
 		pwd, _ := os.Getwd()
 		relPath := file[len(pwd):]
-
-		logFields["source"] = fmt.Sprintf("%s:%s:%v", relPath, path.Base(funcName), line)
+		logrusFields["source"] = fmt.Sprintf("%s:%s:%v", relPath, path.Base(funcName), line)
 	}
-
-	logrusLogger.WithFields(logFields).Warning(warning)
+	logrusLogger.WithFields(logrusFields).Warning(warning)
 }
 
 func (l *StructuredLoggerEntry) Panic(v interface{}, stack []byte) {
