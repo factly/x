@@ -75,6 +75,36 @@ func Error(err error) {
 	logrusLogger.WithFields(logFields).Error(err)
 }
 
+func Info(info string) {
+	logFields := GetDefaultFields()
+
+	if pc, file, line, ok := runtime.Caller(1); ok {
+		funcName := runtime.FuncForPC(pc).Name()
+
+		pwd, _ := os.Getwd()
+		relPath := file[len(pwd):]
+
+		logFields["source"] = fmt.Sprintf("%s:%s:%v", relPath, path.Base(funcName), line)
+	}
+
+	logrusLogger.WithFields(logFields).Info(info)
+}
+
+func Warning(warning string) {
+	logFields := GetDefaultFields()
+
+	if pc, file, line, ok := runtime.Caller(1); ok {
+		funcName := runtime.FuncForPC(pc).Name()
+
+		pwd, _ := os.Getwd()
+		relPath := file[len(pwd):]
+
+		logFields["source"] = fmt.Sprintf("%s:%s:%v", relPath, path.Base(funcName), line)
+	}
+
+	logrusLogger.WithFields(logFields).Warning(warning)
+}
+
 func (l *StructuredLoggerEntry) Panic(v interface{}, stack []byte) {
 	l.Logger = l.Logger.WithFields(logrus.Fields{
 		"stack": string(stack),
