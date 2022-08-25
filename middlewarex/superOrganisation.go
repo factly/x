@@ -21,6 +21,9 @@ type KetoPolicy struct {
 	Description string   `json:"description"`
 }
 
+type KetoResponse struct {
+	Tuples []KetoRelationTuple `json:"relation_tuples"`
+}
 type KetoRelationTuple struct {
 	Namespace string `json:"namespace"`
 	Relation  string `json:"relation"`
@@ -73,14 +76,17 @@ func GetSuperOrganisationID(app string) (int, error) {
 		return 0, err
 	}
 	defer resp.Body.Close()
-	if resp.StatusCode == http.StatusCreated {
-		var relationTuple KetoRelationTuple
+
+	if resp.StatusCode == http.StatusOK {
+		var relationTuple KetoResponse
 		err = json.NewDecoder(resp.Body).Decode(&relationTuple)
 		if err != nil {
 			return 0, err
 		}
-
-		superOrgID := strings.Split(relationTuple.Object, ":")
+		if len(relationTuple.Tuples) == 0 {
+			return 0, errors.New("super organisation doesn't exists")
+		}
+		superOrgID := strings.Split(relationTuple.Tuples[0].Object, ":")
 		superOrgIDInt, err := strconv.Atoi(superOrgID[len(superOrgID)-1])
 		if err != nil {
 			return 0, err
