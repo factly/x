@@ -6,6 +6,7 @@ import (
 	"errors"
 	"net/http"
 	"strconv"
+	"strings"
 
 	"github.com/spf13/viper"
 )
@@ -18,6 +19,13 @@ type KetoPolicy struct {
 	Resources   []string `json:"resources"`
 	Effect      string   `json:"effect"`
 	Description string   `json:"description"`
+}
+
+type KetoRelationTuple struct {
+	Namespace string `json:"namespace"`
+	Relation  string `json:"relation"`
+	Object    string `json:"object"`
+	Subject   string `json:"subject_id"`
 }
 
 // CheckSuperOrganisation checks weather organisation of user is super org or not
@@ -53,7 +61,7 @@ func CheckSuperOrganisation(app string, GetOrganisation func(ctx context.Context
 
 // GetSuperOrganisationID get superorganisation id from keto policy
 func GetSuperOrganisationID(app string) (int, error) {
-	req, err := http.NewRequest("GET", viper.GetString("keto_url")+"/engines/acp/ory/regex/policies/app:"+app+":superorg", nil)
+	req, err := http.NewRequest("GET", viper.GetString("keto_url")+"/relation-tuples?namespace=superorganisation", nil)
 	if err != nil {
 		return 0, err
 	}
@@ -64,18 +72,20 @@ func GetSuperOrganisationID(app string) (int, error) {
 	if err != nil {
 		return 0, err
 	}
-
+	defer resp.Body.Close()
 	if resp.StatusCode == http.StatusOK {
-		var policy KetoPolicy
-		err = json.NewDecoder(resp.Body).Decode(&policy)
+		var relationTuple KetoRelationTuple
+		err = json.NewDecoder(resp.Body).Decode(&relationTuple)
 		if err != nil {
 			return 0, err
 		}
 
-		if len(policy.Subjects) != 0 {
-			orgID, _ := strconv.Atoi(policy.Subjects[0])
-			return orgID, nil
+		superOrgID := strings.Split(relationTuple.Object, ":")
+		superOrgIDInt, err := strconv.Atoi(superOrgID[len(superOrgID)-1])
+		if err != nil {
+			return 0, err
 		}
+		return superOrgIDInt, nil
 	}
 	return 0, errors.New("cannot get super organisation id")
 }
