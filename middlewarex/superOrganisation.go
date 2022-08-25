@@ -73,7 +73,7 @@ func GetSuperOrganisationID(app string) (int, error) {
 		return 0, err
 	}
 	defer resp.Body.Close()
-	if resp.StatusCode == http.StatusOK {
+	if resp.StatusCode == http.StatusCreated {
 		var relationTuple KetoRelationTuple
 		err = json.NewDecoder(resp.Body).Decode(&relationTuple)
 		if err != nil {
