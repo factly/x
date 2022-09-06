@@ -17,7 +17,7 @@ type ValidationBody struct {
 func ValidateAPIToken(header, appName string, GetOrganisation func(ctx context.Context) (int, error)) func(h http.Handler) http.Handler {
 	return func(h http.Handler) http.Handler {
 		return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-			oID, err := GetOrganisation(r.Context())
+			sID, err := GetSpace(r.Context())
 			if err != nil {
 				w.WriteHeader(http.StatusUnauthorized)
 				return
@@ -33,9 +33,7 @@ func ValidateAPIToken(header, appName string, GetOrganisation func(ctx context.C
 				Token: authHeader,
 			}
 
-			res, err := requestx.Request("POST", viper.GetString("kavach_url")+"/applications/"+appName+"/validateToken", tokenBody, map[string]string{
-				"X-Organisation": fmt.Sprint(oID),
-			})
+			res, err := requestx.Request("POST", viper.GetString("kavach_url")+"/spaces/"+fmt.Sprintf("%d", sID)+"/validateToken", tokenBody, nil)
 
 			if err != nil || res.StatusCode != http.StatusOK {
 				w.WriteHeader(http.StatusUnauthorized)
