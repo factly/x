@@ -1,7 +1,6 @@
 package middlewarex
 
 import (
-	"context"
 	"fmt"
 	"net/http"
 
@@ -14,7 +13,7 @@ type ValidationBody struct {
 }
 
 // ValidateAPIToken validates the API tokens from kavach server
-func ValidateAPIToken(header, appName string, GetOrganisation func(ctx context.Context) (int, error)) func(h http.Handler) http.Handler {
+func ValidateAPIToken(header string) func(h http.Handler) http.Handler {
 	return func(h http.Handler) http.Handler {
 		return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 			sID, err := GetSpace(r.Context())
