@@ -5,6 +5,7 @@ import (
 	"encoding/json"
 	"errors"
 	"net/http"
+	"net/url"
 	"strconv"
 	"strings"
 
@@ -64,7 +65,20 @@ func CheckSuperOrganisation(app string, GetOrganisation func(ctx context.Context
 
 // GetSuperOrganisationID get superorganisation id from keto policy
 func GetSuperOrganisationID(app string) (int, error) {
-	req, err := http.NewRequest("GET", viper.GetString("keto_url")+"/relation-tuples?namespace=superorganisation", nil)
+	requestURL, err := url.Parse(viper.GetString("keto_read_api_url"))
+	if err != nil {
+		return 0, err
+	}
+
+	requestURL.Path += "relation-tuples"
+
+	// add Query Parameters
+	params := url.Values{}
+	params.Add("namespace", "superorganisation")
+	params.Add("subject_id", app)
+	requestURL.RawQuery = params.Encode()
+
+	req, err := http.NewRequest("GET", requestURL.String(), nil)
 	if err != nil {
 		return 0, err
 	}
