@@ -3,14 +3,11 @@ package schemax
 import (
 	"encoding/json"
 	"fmt"
-
-	"github.com/factly/dega-server/service/core/model"
-	factCheckModel "github.com/factly/dega-server/service/fact-check/model"
 )
 
-func GetArticleSchema(obj PostData, space model.Space) ArticleSchema {
+func GetArticleSchema(obj PostData, space Space) ArticleSchema {
 	jsonLogo := map[string]string{}
-	if space.Logo != nil {
+	if space.SpaceSettings.Logo != nil {
 		rawLogo, _ := space.SpaceSettings.Logo.URL.RawMessage.MarshalJSON()
 		_ = json.Unmarshal(rawLogo, &jsonLogo)
 	}
@@ -29,7 +26,7 @@ func GetArticleSchema(obj PostData, space model.Space) ArticleSchema {
 		articleSchema.Author = append(articleSchema.Author, Author{
 			Type: "Person",
 			Name: eachAuthor.FirstName + " " + eachAuthor.LastName,
-			URL:  fmt.Sprint(space.SiteAddress, "/users/", eachAuthor.Slug),
+			URL:  fmt.Sprint(space.SpaceSettings.SiteAddress, "/users/", eachAuthor.Slug),
 		})
 	}
 	articleSchema.Publisher.Type = "Organization"
@@ -42,7 +39,7 @@ func GetArticleSchema(obj PostData, space model.Space) ArticleSchema {
 	return articleSchema
 }
 
-func GetFactCheckSchema(obj PostData, space model.Space, ratings []factCheckModel.Rating) []FactCheckSchema {
+func GetFactCheckSchema(obj PostData, space Space, ratings []Rating) []FactCheckSchema {
 	result := make([]FactCheckSchema, 0)
 
 	bestRating := 5
@@ -57,11 +54,11 @@ func GetFactCheckSchema(obj PostData, space model.Space, ratings []factCheckMode
 		claimSchema.Context = "https://schema.org"
 		claimSchema.Type = "ClaimReview"
 		claimSchema.DatePublished = obj.Post.CreatedAt
-		claimSchema.URL = space.SiteAddress + "/" + obj.Slug
+		claimSchema.URL = space.SpaceSettings.SiteAddress + "/" + obj.Slug
 		claimSchema.ClaimReviewed = each.Claim
 		claimSchema.Author.Type = "Organization"
 		claimSchema.Author.Name = space.Name
-		claimSchema.Author.URL = space.SiteAddress
+		claimSchema.Author.URL = space.SpaceSettings.SiteAddress
 		claimSchema.ReviewRating.Type = "Rating"
 		claimSchema.ReviewRating.RatingValue = each.Rating.NumericValue
 		claimSchema.ReviewRating.AlternateName = each.Rating.Name
@@ -81,7 +78,7 @@ func GetFactCheckSchema(obj PostData, space model.Space, ratings []factCheckMode
 	return result
 }
 
-func GetSchemas(obj PostData, space model.Space, ratings []factCheckModel.Rating) []interface{} {
+func GetSchemas(obj PostData, space Space, ratings []Rating) []interface{} {
 	schemas := make([]interface{}, 0)
 
 	schemas = append(schemas, GetArticleSchema(obj, space))
