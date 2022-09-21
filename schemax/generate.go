@@ -11,7 +11,7 @@ import (
 func GetArticleSchema(obj PostData, space model.Space) ArticleSchema {
 	jsonLogo := map[string]string{}
 	if space.Logo != nil {
-		rawLogo, _ := space.Logo.URL.RawMessage.MarshalJSON()
+		rawLogo, _ := space.SpaceSettings.Logo.URL.RawMessage.MarshalJSON()
 		_ = json.Unmarshal(rawLogo, &jsonLogo)
 	}
 
