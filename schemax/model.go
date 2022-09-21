@@ -3,8 +3,6 @@ package schemax
 import (
 	"time"
 
-	"github.com/factly/dega-server/config"
-	"github.com/factly/dega-server/service/core/model"
 	"github.com/jinzhu/gorm/dialects/postgres"
 	"gorm.io/gorm"
 )
@@ -21,10 +19,10 @@ type Base struct {
 type PostData struct {
 	Post
 	Authors []PostAuthor `json:"authors"`
-	Claims  []Claim  `json:"claims"`
+	Claims  []Claim      `json:"claims"`
 }
 
-//Post Author 
+//Post Author
 type PostAuthor struct {
 	Base
 	Email            string         `gorm:"column:email;uniqueIndex" json:"email"`
@@ -199,7 +197,7 @@ type Claim struct {
 }
 
 type Claimant struct {
-	config.Base
+	Base
 	Name            string         `gorm:"column:name" json:"name"`
 	Slug            string         `gorm:"column:slug" json:"slug"`
 	Description     postgres.Jsonb `gorm:"column:description" json:"description" swaggertype:"primitive,string"`
@@ -207,7 +205,7 @@ type Claimant struct {
 	IsFeatured      bool           `gorm:"column:is_featured" json:"is_featured"`
 	TagLine         string         `gorm:"column:tag_line" json:"tag_line"`
 	MediumID        *uint          `gorm:"column:medium_id;default:NULL" json:"medium_id"`
-	Medium          *model.Medium  `json:"medium"`
+	Medium          *Medium        `json:"medium"`
 	MetaFields      postgres.Jsonb `gorm:"column:meta_fields" json:"meta_fields" swaggertype:"primitive,string"`
 	SpaceID         uint           `gorm:"column:space_id" json:"space_id"`
 	Meta            postgres.Jsonb `gorm:"column:meta" json:"meta" swaggertype:"primitive,string"`
