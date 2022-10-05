@@ -49,6 +49,16 @@ func SetupMeiliSearch(indexName string, searchableAttributes, filterableAttribut
 	if err != nil {
 		return err
 	}
+	// Add updateTypoTolerance in index
+	_, err = Client.Index(indexName).UpdateTypoTolerance(&meilisearch.TypoTolerance{
+		MinWordSizeForTypos: meilisearch.MinWordSizeForTypos{
+			OneTypo:  4,
+			TwoTypos: 8,
+		},
+	})
+	if err != nil {
+		return err
+	}
 
 	// Add sortable attributes in index
 	_, err = Client.Index(indexName).UpdateStopWords(&stopWords)
