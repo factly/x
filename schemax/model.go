@@ -251,4 +251,5 @@ type Post struct {
 	HeaderCode       string         `gorm:"column:header_code" json:"header_code"`
 	FooterCode       string         `gorm:"column:footer_code" json:"footer_code"`
 	MetaFields       postgres.Jsonb `gorm:"column:meta_fields" json:"meta_fields" swaggertype:"primitive,string"`
+	PageHTML         postgres.Jsonb `gorm:"column:page_html" json:"page_html" swaggertype:"primitive,string"`
 }
