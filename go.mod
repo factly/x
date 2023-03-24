@@ -11,7 +11,7 @@ require (
 	github.com/go-playground/validator/v10 v10.6.1
 	github.com/jinzhu/gorm v1.9.16
 	github.com/k3a/html2text v1.0.8
-	github.com/meilisearch/meilisearch-go v0.20.0
+	github.com/meilisearch/meilisearch-go v0.23.1
 	github.com/opentracing/opentracing-go v1.2.0
 	github.com/sirupsen/logrus v1.8.1
 	github.com/spf13/viper v1.8.1
@@ -23,6 +23,7 @@ require (
 	github.com/andybalholm/brotli v1.0.4 // indirect
 	github.com/fsnotify/fsnotify v1.4.9 // indirect
 	github.com/golang-jwt/jwt v3.2.2+incompatible // indirect
+	github.com/golang-jwt/jwt/v4 v4.5.0 // indirect
 	github.com/hashicorp/hcl v1.0.0 // indirect
 	github.com/jackc/chunkreader/v2 v2.0.1 // indirect
 	github.com/jackc/pgconn v1.8.0 // indirect
