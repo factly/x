@@ -9,9 +9,14 @@ import (
 
 // Client client for meili search server
 var Client *meilisearch.Client
+var searchable_attributes []string
+var filterable_attributes []string
+var sortable_attributes []string
+var ranking_attributes []string
+var stop_words []string
 
 // SetupMeiliSearch setups the meili search server index
-func SetupMeiliSearch(indexName string, searchableAttributes, filterableAttributes, sortableAttributes, rankingAttritubes, stopWords []string) error {
+func SetupMeiliSearch(searchableAttributes, filterableAttributes, sortableAttributes, rankingAttritubes, stopWords []string) error {
 	Client = meilisearch.NewClient(
 		meilisearch.ClientConfig{
 			Host:    viper.GetString("meili_url"),
@@ -20,32 +25,39 @@ func SetupMeiliSearch(indexName string, searchableAttributes, filterableAttribut
 		},
 	)
 
-	_, err := Client.GetIndex(indexName)
+	searchable_attributes = searchableAttributes
+	filterable_attributes = filterableAttributes
+	sortable_attributes = sortableAttributes
+	ranking_attributes = rankingAttritubes
+	stop_words = stopWords
+
+	return nil
+}
+
+func setupIndex(indexName string) error {
+
+	_, err := Client.CreateIndex(&meilisearch.IndexConfig{
+		Uid:        indexName,
+		PrimaryKey: "object_id",
+	})
+
 	if err != nil {
-		_, err = Client.CreateIndex(&meilisearch.IndexConfig{
-			Uid:        indexName,
-			PrimaryKey: "object_id",
-		})
-
-		if err != nil {
-			return err
-		}
+		return err
 	}
-
 	// adding filterable attributes to the meilisearch instance
-	_, err = Client.Index(indexName).UpdateFilterableAttributes(&filterableAttributes)
+	_, err = Client.Index(indexName).UpdateFilterableAttributes(&filterable_attributes)
 	if err != nil {
 		return err
 	}
 
 	// Add searchable attributes in index
-	_, err = Client.Index(indexName).UpdateSearchableAttributes(&searchableAttributes)
+	_, err = Client.Index(indexName).UpdateSearchableAttributes(&searchable_attributes)
 	if err != nil {
 		return err
 	}
 
 	// Add sortable attributes in index
-	_, err = Client.Index(indexName).UpdateSortableAttributes(&sortableAttributes)
+	_, err = Client.Index(indexName).UpdateSortableAttributes(&sortable_attributes)
 	if err != nil {
 		return err
 	}
@@ -61,14 +73,14 @@ func SetupMeiliSearch(indexName string, searchableAttributes, filterableAttribut
 	}
 
 	// Add UpdateRankingRules in index
-	_, err = Client.Index(indexName).UpdateRankingRules(&rankingAttritubes)
+	_, err = Client.Index(indexName).UpdateRankingRules(&ranking_attributes)
 
 	if err != nil {
 		return err
 	}
 
 	// Add sortable attributes in index
-	_, err = Client.Index(indexName).UpdateStopWords(&stopWords)
+	_, err = Client.Index(indexName).UpdateStopWords(&stop_words)
 	if err != nil {
 		return err
 	}
