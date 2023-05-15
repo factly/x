@@ -16,7 +16,7 @@ var ranking_attributes []string
 var stop_words []string
 
 // SetupMeiliSearch setups the meili search server index
-func SetupMeiliSearch(searchableAttributes, filterableAttributes, sortableAttributes, rankingAttritubes, stopWords []string) error {
+func SetupMeiliSearch(indexes, searchableAttributes, filterableAttributes, sortableAttributes, rankingAttritubes, stopWords []string) error {
 	Client = meilisearch.NewClient(
 		meilisearch.ClientConfig{
 			Host:    viper.GetString("meili_url"),
@@ -30,6 +30,10 @@ func SetupMeiliSearch(searchableAttributes, filterableAttributes, sortableAttrib
 	sortable_attributes = sortableAttributes
 	ranking_attributes = rankingAttritubes
 	stop_words = stopWords
+
+	for _, indexName := range indexes {
+		setupIndex(indexName)
+	}
 
 	return nil
 }
