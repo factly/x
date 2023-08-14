@@ -11,7 +11,7 @@ require (
 	github.com/go-playground/validator/v10 v10.6.1
 	github.com/jinzhu/gorm v1.9.16
 	github.com/k3a/html2text v1.0.8
-	github.com/meilisearch/meilisearch-go v0.23.1
+	github.com/meilisearch/meilisearch-go v0.25.0
 	github.com/opentracing/opentracing-go v1.2.0
 	github.com/sirupsen/logrus v1.8.1
 	github.com/spf13/viper v1.8.1
