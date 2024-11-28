@@ -19,8 +19,9 @@ var req *http.Request
 func Init() func(next http.Handler) http.Handler {
 	logrusLogger = logrus.New()
 	logrusLogger.Formatter = &logrus.TextFormatter{
-		ForceColors:   true,
-		FullTimestamp: true,
+		ForceColors:            true,
+		FullTimestamp:          true,
+		DisableLevelTruncation: true,
 	}
 	return NewStructuredLogger(logrusLogger)
 }
