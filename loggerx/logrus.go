@@ -16,13 +16,27 @@ import (
 var logrusLogger *logrus.Logger
 var req *http.Request
 
-func Init() func(next http.Handler) http.Handler {
+type LoggerOptions struct {
+	DisableFatalExit bool
+}
+
+func Init(opts ...*LoggerOptions) func(next http.Handler) http.Handler {
 	logrusLogger = logrus.New()
 	logrusLogger.Formatter = &logrus.TextFormatter{
 		ForceColors:            true,
 		FullTimestamp:          true,
 		DisableLevelTruncation: true,
 	}
+
+	// Apply options if provided
+	if len(opts) > 0 && opts[0] != nil {
+		if opts[0].DisableFatalExit {
+			logrusLogger.ExitFunc = func(code int) {
+				// No-op: Do nothing on Fatal logs
+			}
+		}
+	}
+
 	return NewStructuredLogger(logrusLogger)
 }
 
@@ -59,6 +73,18 @@ func (l *StructuredLoggerEntry) Write(status, bytes int, header http.Header, ela
 	})
 
 	l.Logger.Infoln("request complete")
+}
+
+func Fatal(fatal string) {
+	logrusFields := logrus.Fields{}
+	pc, file, line, ok := runtime.Caller(1)
+	if ok {
+		funcName := runtime.FuncForPC(pc).Name()
+		pwd, _ := os.Getwd()
+		relPath := file[len(pwd):]
+		logrusFields["source"] = fmt.Sprintf("%s:%s:%v", relPath, path.Base(funcName), line)
+	}
+	logrusLogger.WithFields(logrusFields).Fatal(fatal)
 }
 
 func Error(err error) {
